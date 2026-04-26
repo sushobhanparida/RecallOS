@@ -11,21 +11,30 @@ import com.example.recallos.worker.AnalyzeScreenshotWorker
 import com.example.recallos.worker.ScreenshotObserverWorker
 
 /**
- * Receives the "Add to RecallOS" action from the screenshot detection notification.
- * Dismisses the notification and enqueues the background analysis worker.
+ * Receives one of three actions from the screenshot detection notification:
+ *   • ACTION_SAVE  — import screenshot, show in Home
+ *   • ACTION_STACK — import screenshot, open Stacks tab
+ *   • ACTION_TASK  — import screenshot (no auto-todo), open task creation sheet
  */
 class ScreenshotActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val uriString = intent.getStringExtra(ScreenshotObserverWorker.KEY_URI) ?: return
 
-        // Dismiss the "New Screenshot" notification
+        // Dismiss the detection notification
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(ScreenshotObserverWorker.NOTIF_ID_DETECTED)
 
-        // Kick off background OCR + import
+        val mode = when (intent.action) {
+            ScreenshotObserverWorker.ACTION_SAVE  -> AnalyzeScreenshotWorker.MODE_SAVE
+            ScreenshotObserverWorker.ACTION_STACK -> AnalyzeScreenshotWorker.MODE_STACK
+            ScreenshotObserverWorker.ACTION_TASK  -> AnalyzeScreenshotWorker.MODE_TASK
+            else -> AnalyzeScreenshotWorker.MODE_SAVE
+        }
+
         val inputData = Data.Builder()
             .putString(AnalyzeScreenshotWorker.KEY_URI, uriString)
+            .putString(AnalyzeScreenshotWorker.KEY_MODE, mode)
             .build()
 
         val analyzeRequest = OneTimeWorkRequestBuilder<AnalyzeScreenshotWorker>()

@@ -24,6 +24,9 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     private val _anytimeTodos = MutableStateFlow<List<TodoEntity>>(emptyList())
     val anytimeTodos: StateFlow<List<TodoEntity>> = _anytimeTodos.asStateFlow()
 
+    private val _eventTodos = MutableStateFlow<List<TodoEntity>>(emptyList())
+    val eventTodos: StateFlow<List<TodoEntity>> = _eventTodos.asStateFlow()
+
     init {
         viewModelScope.launch {
             todoDao.getTodosByCategory("Morning").collectLatest { _morningTodos.value = it }
@@ -33,6 +36,9 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
         }
         viewModelScope.launch {
             todoDao.getTodosByCategory("Anytime").collectLatest { _anytimeTodos.value = it }
+        }
+        viewModelScope.launch {
+            todoDao.getEventTodos().collectLatest { _eventTodos.value = it }
         }
     }
 
@@ -45,9 +51,12 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
     fun saveTodo(todo: TodoEntity) {
         viewModelScope.launch {
             if (todo.id == 0L) {
-                todoDao.insertTodo(todo)
+                val inserted = todoDao.insertTodo(todo)
+                // Schedule alarm if notify option set
+                scheduleAlarmIfNeeded(todo.copy(id = inserted))
             } else {
                 todoDao.updateTodo(todo)
+                scheduleAlarmIfNeeded(todo)
             }
         }
     }
@@ -69,5 +78,26 @@ class TodoViewModel(application: Application) : AndroidViewModel(application) {
                 todoDao.updateTodo(todo.copy(isReminded = true))
             }
         }
+    }
+
+    private fun scheduleAlarmIfNeeded(todo: TodoEntity) {
+        val application = getApplication<Application>()
+        val dueDate = todo.dueDate ?: return
+        if (todo.isEvent) {
+            // Events always get an alarm at their due time
+            ReminderManager.scheduleReminder(application, todo.id, dueDate, todo.title)
+            viewModelScope.launch { todoDao.updateTodo(todo.copy(isReminded = true)) }
+            return
+        }
+        // Tasks: schedule based on notifyOption
+        val alarmTime: Long = when (todo.notifyOption) {
+            "On the day"    -> dueDate
+            "Night before"  -> dueDate - 12 * 60 * 60 * 1000L
+            "1 hour before" -> dueDate - 60 * 60 * 1000L
+            "30 min before" -> dueDate - 30 * 60 * 1000L
+            else -> return
+        }
+        ReminderManager.scheduleReminder(application, todo.id, alarmTime, todo.title)
+        viewModelScope.launch { todoDao.updateTodo(todo.copy(isReminded = true)) }
     }
 }

@@ -26,7 +26,7 @@ class ListRepository(private val listDao: ListDao) {
     }
 
     suspend fun addScreenshotToList(listId: Long, screenshotId: Long) {
-        val crossRef = ListScreenshotCrossRef(listId, screenshotId)
+        val crossRef = ListScreenshotCrossRef(stackId = listId, screenshotId = screenshotId)
         listDao.addScreenshotToList(crossRef)
     }
 

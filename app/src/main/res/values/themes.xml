@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Apricot Soft-Touch — Activity window theme.
+    Compose renders its own color scheme via RecallOSTheme; these XML attributes
+    control the system chrome (status bar, nav bar, window background) so the
+    warm cream bleeds edge-to-edge before Compose content renders.
+-->
 <resources>
+    <style name="Theme.RecallOS" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Window background: Apricot cream so no white flash on launch -->
+        <item name="android:windowBackground">@color/apricot_background</item>
 
-    <style name="Theme.RecallOS" parent="android:Theme.Material.Light.NoActionBar" />
+        <!-- Status bar: transparent so edge-to-edge Compose content shows through -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Navigation bar: cream to blend with app background -->
+        <item name="android:navigationBarColor">@color/apricot_background</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
 </resources>

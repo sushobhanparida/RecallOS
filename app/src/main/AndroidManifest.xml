@@ -30,12 +30,14 @@
 
         <receiver android:name=".core.ReminderReceiver" android:exported="false" />
 
-        <!-- Receives the "Add to RecallOS" tap from the screenshot detection notification -->
+        <!-- Receives one of three actions from the screenshot detection notification -->
         <receiver
             android:name=".core.ScreenshotActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.recallos.ACTION_ADD_SCREENSHOT" />
+                <action android:name="com.example.recallos.ACTION_SAVE_SCREENSHOT" />
+                <action android:name="com.example.recallos.ACTION_STACK_SCREENSHOT" />
+                <action android:name="com.example.recallos.ACTION_TASK_SCREENSHOT" />
             </intent-filter>
         </receiver>
     </application>

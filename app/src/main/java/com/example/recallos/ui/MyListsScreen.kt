@@ -2,12 +2,12 @@ package com.example.recallos.ui
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -22,12 +22,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.recallos.data.ListEntity
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flowOf
+import com.example.recallos.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,14 +36,19 @@ fun MyListsScreen(
 ) {
     val lists by viewModel.lists.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
-    var newListName by remember { mutableStateOf("") }
+    var newListName      by remember { mutableStateOf("") }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier       = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            FloatingActionButton(onClick = { showCreateDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Create List")
+            FloatingActionButton(
+                onClick        = { showCreateDialog = true },
+                containerColor = Primary,
+                contentColor   = OnPrimary,
+                shape          = RadiusFull
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Create Stack")
             }
         }
     ) { paddingValues ->
@@ -53,32 +56,54 @@ fun MyListsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             Text(
-                text = "My Lists",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp),
-                color = MaterialTheme.colorScheme.onBackground
+                text     = "My Stacks",
+                style    = MaterialTheme.typography.headlineMedium,
+                color    = OnSurface,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
 
             if (lists.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No lists created yet. Tap + to create one.", color = Color.Gray)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .clip(RadiusCard)
+                                .background(SurfaceContainerHigh),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("📚", style = MaterialTheme.typography.headlineLarge)
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "No stacks yet",
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = OnSurface
+                        )
+                        Text(
+                            "Tap + to create your first stack",
+                            style    = MaterialTheme.typography.bodyMedium,
+                            color    = OnSurfaceVariant,
+                            modifier = Modifier.padding(top = 6.dp)
+                        )
+                    }
                 }
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
+                    columns               = GridCells.Fixed(2),
+                    modifier              = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(32.dp)
+                    verticalArrangement   = Arrangement.spacedBy(28.dp),
+                    contentPadding        = PaddingValues(bottom = 80.dp)
                 ) {
                     items(lists) { listEntity ->
-                        ListGridItem(
+                        StackGridItem(
                             listEntity = listEntity,
-                            viewModel = viewModel,
-                            onClick = { onListClick(listEntity.id) }
+                            viewModel  = viewModel,
+                            onClick    = { onListClick(listEntity.id) }
                         )
                     }
                 }
@@ -86,137 +111,149 @@ fun MyListsScreen(
         }
     }
 
+    // ── Create Stack dialog ──────────────────────────────────────────────────
     if (showCreateDialog) {
         AlertDialog(
             onDismissRequest = { showCreateDialog = false },
-            title = { Text("Create New List") },
+            containerColor   = SurfaceContainerLowest,
+            shape            = RadiusCard,
+            title = {
+                Text(
+                    "Create New Stack",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = OnSurface
+                )
+            },
             text = {
                 OutlinedTextField(
-                    value = newListName,
+                    value         = newListName,
                     onValueChange = { newListName = it },
-                    label = { Text("List Name") },
-                    singleLine = true
+                    label         = { Text("Stack Name") },
+                    singleLine    = true,
+                    shape         = RadiusLg,
+                    colors        = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor   = Primary,
+                        unfocusedBorderColor = OutlineVariant
+                    )
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
-                    if (newListName.isNotBlank()) {
-                        viewModel.createList(newListName.trim())
-                    }
-                    showCreateDialog = false
-                    newListName = ""
-                }) {
-                    Text("Create")
-                }
+                Button(
+                    onClick = {
+                        if (newListName.isNotBlank()) viewModel.createList(newListName.trim())
+                        showCreateDialog = false
+                        newListName = ""
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                    shape  = RadiusMd
+                ) { Text("Create") }
             },
             dismissButton = {
-                TextButton(onClick = { showCreateDialog = false }) {
-                    Text("Cancel")
-                }
+                OutlinedButton(
+                    onClick = { showCreateDialog = false },
+                    shape   = RadiusMd,
+                    border  = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+                ) { Text("Cancel", color = OnSurfaceVariant) }
             }
         )
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
-fun ListGridItem(
+fun StackGridItem(
     listEntity: ListEntity,
     viewModel: ListsViewModel,
     onClick: () -> Unit
 ) {
-    // Collect cover URIs dynamically
     val coverUris by viewModel.getCoverUrisForList(listEntity.id)
         .collectAsState(initial = emptyList())
-        
     val count by viewModel.getCountForList(listEntity.id)
         .collectAsState(initial = 0)
 
     Column(
-        modifier = Modifier
+        modifier            = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LayeredCoverPreview(coverUris)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = listEntity.name,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
+            text      = listEntity.name,
+            style     = MaterialTheme.typography.titleMedium,
+            color     = OnSurface,
             textAlign = TextAlign.Center
         )
         Text(
-            text = "$count screenshots",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray,
-            textAlign = TextAlign.Center
+            text      = if (count == 1) "1 screenshot" else "$count screenshots",
+            style     = MaterialTheme.typography.labelMedium,
+            color     = OnSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier  = Modifier.padding(top = 2.dp)
         )
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun LayeredCoverPreview(coverUris: List<String>) {
     Box(
-        modifier = Modifier
+        modifier            = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .padding(16.dp),
+            .padding(12.dp),
         contentAlignment = Alignment.Center
     ) {
         if (coverUris.isEmpty()) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize(0.8f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.LightGray.copy(alpha = 0.5f))
+                    .fillMaxSize(0.85f)
+                    .clip(RadiusCard)
+                    .background(SurfaceContainerHigh)
+                    .border(1.dp, OutlineVariant, RadiusCard)
             )
         } else {
-            // Show up to 3 layers to recreate the effect from the reference
-            val urisToDisplay = coverUris.take(3)
-            
-            // Background Layer (Index 2 if available, else 1, else 0)
-            if (urisToDisplay.size >= 3) {
+            val uris = coverUris.take(3)
+
+            if (uris.size >= 3) {
                 AsyncImage(
-                    model = Uri.parse(urisToDisplay[2]),
+                    model              = Uri.parse(uris[2]),
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize(0.7f)
-                        .offset(x = (-16).dp, y = (-12).dp)
-                        .rotate(-8f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .shadow(4.dp, RoundedCornerShape(12.dp))
-                        .background(Color.White)
+                    contentScale       = ContentScale.Crop,
+                    modifier           = Modifier
+                        .fillMaxSize(0.70f)
+                        .offset(x = (-14).dp, y = (-10).dp)
+                        .rotate(-7f)
+                        .clip(RadiusCard)
+                        .shadow(2.dp, RadiusCard)
+                        .background(SurfaceContainerLowest)
                 )
             }
-            
-            // Middle Layer (Index 1)
-            if (urisToDisplay.size >= 2) {
+            if (uris.size >= 2) {
                 AsyncImage(
-                    model = Uri.parse(urisToDisplay[1]),
+                    model              = Uri.parse(uris[1]),
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize(0.75f)
-                        .offset(x = 16.dp, y = (-4).dp)
-                        .rotate(10f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .shadow(4.dp, RoundedCornerShape(12.dp))
-                        .background(Color.White)
+                    contentScale       = ContentScale.Crop,
+                    modifier           = Modifier
+                        .fillMaxSize(0.74f)
+                        .offset(x = 14.dp, y = (-4).dp)
+                        .rotate(9f)
+                        .clip(RadiusCard)
+                        .shadow(3.dp, RadiusCard)
+                        .background(SurfaceContainerLowest)
                 )
             }
-            
-            // Front Layer (Index 0)
             AsyncImage(
-                model = Uri.parse(urisToDisplay[0]),
+                model              = Uri.parse(uris[0]),
                 contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize(0.85f)
-                    .offset(y = 8.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .shadow(8.dp, RoundedCornerShape(12.dp))
-                    .background(Color.White)
+                contentScale       = ContentScale.Crop,
+                modifier           = Modifier
+                    .fillMaxSize(0.84f)
+                    .offset(y = 6.dp)
+                    .clip(RadiusCard)
+                    .shadow(6.dp, RadiusCard)
+                    .background(SurfaceContainerLowest)
             )
         }
     }

@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Apricot Soft-Touch — XML color resources.
+    Used by the Activity theme for status bar, nav bar, and window background.
+    Compose UI reads colors directly from the Kotlin Color.kt palette.
+-->
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
+    <!-- Core palette -->
+    <color name="apricot_background">#FFF8F6</color>
+    <color name="apricot_primary">#94492E</color>
+    <color name="apricot_on_primary">#FFFFFF</color>
+    <color name="apricot_surface_container_lowest">#FFFFFF</color>
+    <color name="apricot_outline_variant">#DAC1BA</color>
+    <color name="apricot_on_surface">#211A18</color>
+
+    <!-- Legacy aliases (kept for any remaining XML references) -->
     <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
 </resources>

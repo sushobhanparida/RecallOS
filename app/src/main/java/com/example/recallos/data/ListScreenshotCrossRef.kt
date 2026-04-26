@@ -5,13 +5,13 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 
 @Entity(
-    tableName = "list_screenshot_cross_ref",
-    primaryKeys = ["listId", "screenshotId"],
+    tableName = "stack_screenshot_cross_ref",
+    primaryKeys = ["stackId", "screenshotId"],
     foreignKeys = [
         ForeignKey(
             entity = ListEntity::class,
             parentColumns = ["id"],
-            childColumns = ["listId"],
+            childColumns = ["stackId"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
@@ -21,10 +21,10 @@ import androidx.room.Index
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("listId"), Index("screenshotId")]
+    indices = [Index("stackId"), Index("screenshotId")]
 )
 data class ListScreenshotCrossRef(
-    val listId: Long,
+    val stackId: Long,
     val screenshotId: Long,
     val addedAt: Long = System.currentTimeMillis()
 )

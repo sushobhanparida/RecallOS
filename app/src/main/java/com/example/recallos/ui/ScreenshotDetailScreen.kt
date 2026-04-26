@@ -2,12 +2,12 @@ package com.example.recallos.ui
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Label
@@ -22,9 +22,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.recallos.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -40,25 +40,35 @@ fun ScreenshotDetailScreen(
     }
 
     val screenshot by viewModel.screenshotState.collectAsState()
-    val todo by viewModel.todoState.collectAsState()
+    val todo       by viewModel.todoState.collectAsState()
 
     val dateFormat = SimpleDateFormat("MMMM d'th', yyyy 'at' h:mm a", Locale.getDefault())
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Details", fontWeight = FontWeight.SemiBold) },
+                title = {
+                    Text(
+                        "Details",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = OnSurface
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = OnSurface
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFFAFAFA)
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
-        containerColor = Color(0xFFFAFAFA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         if (screenshot != null) {
             Column(
@@ -67,109 +77,125 @@ fun ScreenshotDetailScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Hero Image
-                AsyncImage(
-                    model = Uri.parse(screenshot!!.uri),
-                    contentDescription = "Full Screenshot",
+                // ── Hero Image ───────────────────────────────────────────────
+                Box(
                     modifier = Modifier
+                        .padding(horizontal = 20.dp)
                         .fillMaxWidth()
-                        .heightIn(max = 400.dp)
-                        .background(Color.Black),
-                    contentScale = ContentScale.Fit
-                )
+                        .clip(RadiusCard)
+                        .border(1.dp, OutlineVariant, RadiusCard)
+                ) {
+                    AsyncImage(
+                        model              = Uri.parse(screenshot!!.uri),
+                        contentDescription = "Full Screenshot",
+                        modifier           = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 400.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
 
-                    // Associated Task
+                    // ── Associated Task card ─────────────────────────────────
                     if (todo != null) {
-                        MetadataCard(
-                            icon = Icons.Default.Assignment,
-                            title = "Associated Task",
-                            content = todo!!.title,
-                            iconTint = Color(0xFFC3C5F1)
+                        DetailCard(
+                            icon      = Icons.Default.Assignment,
+                            title     = if (todo!!.isEvent) "Associated Event" else "Associated Task",
+                            content   = todo!!.title,
+                            iconColor = if (todo!!.isEvent) Secondary else Primary
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
 
-                    // Classification & Timing
-                    MetadataCard(
-                        icon = Icons.Default.Label,
-                        title = "Tag Classification",
-                        content = screenshot!!.tag,
-                        iconTint = Color(0xFFE5B5B5)
+                    // ── Tag ──────────────────────────────────────────────────
+                    DetailCard(
+                        icon      = Icons.Default.Label,
+                        title     = "Category",
+                        content   = screenshot!!.tag,
+                        iconColor = Secondary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    MetadataCard(
-                        icon = Icons.Default.Schedule,
-                        title = "Captured On",
-                        content = dateFormat.format(Date(screenshot!!.createdAt)),
-                        iconTint = Color.Gray
+                    // ── Captured on ──────────────────────────────────────────
+                    DetailCard(
+                        icon      = Icons.Default.Schedule,
+                        title     = "Captured On",
+                        content   = dateFormat.format(Date(screenshot!!.createdAt)),
+                        iconColor = Tertiary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Extracted Text
+                    // ── Extracted text ───────────────────────────────────────
                     if (screenshot!!.extractedText.isNotEmpty()) {
-                        MetadataCard(
-                            icon = Icons.Default.Description,
-                            title = "Extracted Text (OCR)",
-                            content = screenshot!!.extractedText,
-                            iconTint = Color(0xFF86EFAC)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        DetailCard(
+                            icon      = Icons.Default.Description,
+                            title     = "Extracted Text (OCR)",
+                            content   = screenshot!!.extractedText,
+                            iconColor = Outline
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(32.dp))
                 }
             }
         } else {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Primary)
             }
         }
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
-fun MetadataCard(
+fun DetailCard(
     icon: ImageVector,
     title: String,
     content: String,
-    iconTint: Color
+    iconColor: Color
 ) {
     Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp), // flat modern look
-        modifier = Modifier.fillMaxWidth()
+        shape     = RadiusCard,
+        colors    = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+        border    = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        modifier  = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = title,
-                    tint = iconTint,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(RadiusMd)
+                        .background(iconColor.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector        = icon,
+                        contentDescription = title,
+                        tint               = iconColor,
+                        modifier           = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = title,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray
+                    text  = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = OnSurfaceVariant
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
-                text = content,
-                fontSize = 16.sp,
-                color = Color.Black,
-                lineHeight = 22.sp
+                text  = content,
+                style = MaterialTheme.typography.bodyMedium,
+                color = OnSurface
             )
         }
     }
