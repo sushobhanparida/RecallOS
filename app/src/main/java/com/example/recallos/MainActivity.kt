@@ -1,6 +1,7 @@
 package com.example.recallos
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -19,7 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -34,130 +35,41 @@ import androidx.navigation.navArgument
 import com.example.recallos.ui.HomeScreen
 import com.example.recallos.ui.ListDetailScreen
 import com.example.recallos.ui.MyListsScreen
+import com.example.recallos.ui.PendingTaskData
+import com.example.recallos.ui.TodoScreen
 import com.example.recallos.ui.theme.RecallOSTheme
+import com.example.recallos.worker.AnalyzeScreenshotWorker
 
 class MainActivity : ComponentActivity() {
 
     private var hasPermissions by mutableStateOf(false)
 
+    // Holds task-creation data coming from a notification "Add to Task" tap
+    private var pendingTask by mutableStateOf<PendingTaskData?>(null)
+    // Holds "open_stacks" request from notification "Stack" tap
+    private var pendingNavAction by mutableStateOf<String?>(null)
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val granted = permissions.entries.all { it.value }
-        if (granted) {
-            hasPermissions = true
-        }
+        if (permissions.entries.all { it.value }) hasPermissions = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
         checkPermissions()
+        handleIntent(intent)
 
         setContent {
             RecallOSTheme {
                 if (hasPermissions) {
-                    val navController = rememberNavController()
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentRoute = navBackStackEntry?.destination?.route
-
-                    Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        bottomBar = {
-                            // Only show bottom bar on top level screens
-                            if (currentRoute == "home" || currentRoute == "lists" || currentRoute == "todo") {
-                                NavigationBar {
-                                    NavigationBarItem(
-                                        icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                                        label = { Text("Home") },
-                                        selected = currentRoute == "home",
-                                        onClick = {
-                                            navController.navigate("home") {
-                                                popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                                launchSingleTop = true
-                                                restoreState = true
-                                            }
-                                        }
-                                    )
-                                    NavigationBarItem(
-                                        icon = { Icon(Icons.Default.List, contentDescription = "My Lists") },
-                                        label = { Text("My Lists") },
-                                        selected = currentRoute == "lists",
-                                        onClick = {
-                                            navController.navigate("lists") {
-                                                popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                                launchSingleTop = true
-                                                restoreState = true
-                                            }
-                                        }
-                                    )
-                                    NavigationBarItem(
-                                        icon = { Icon(androidx.compose.material.icons.Icons.Default.CheckCircle, contentDescription = "To-do") },
-                                        label = { Text("To-do") },
-                                        selected = currentRoute == "todo",
-                                        onClick = {
-                                            navController.navigate("todo") {
-                                                popUpTo(navController.graph.startDestinationId) { saveState = true }
-                                                launchSingleTop = true
-                                                restoreState = true
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    ) { innerPadding ->
-                        NavHost(
-                            navController = navController,
-                            startDestination = "home",
-                            modifier = Modifier.padding(innerPadding)
-                        ) {
-                            composable("home") {
-                                HomeScreen(
-                                    onScreenshotClick = { screenshotId ->
-                                        navController.navigate("screenshot_detail/$screenshotId")
-                                    }
-                                )
-                            }
-                            composable("todo") {
-                                com.example.recallos.ui.TodoScreen(
-                                    onTodoClick = { screenshotId ->
-                                        navController.navigate("screenshot_detail/$screenshotId")
-                                    }
-                                )
-                            }
-                            composable("lists") {
-                                MyListsScreen(
-                                    onListClick = { listId ->
-                                        navController.navigate("list_detail/$listId")
-                                    }
-                                )
-                            }
-                            composable(
-                                route = "list_detail/{listId}",
-                                arguments = listOf(navArgument("listId") { type = NavType.LongType })
-                            ) { backStackEntry ->
-                                val listId = backStackEntry.arguments?.getLong("listId") ?: 0L
-                                // Here we optimally should pass the name too, but we can just use "List" for now or fetch it from DB
-                                ListDetailScreen(
-                                    listId = listId,
-                                    listName = "List Detail", // Could be enhanced to pass real name
-                                    onBackClick = { navController.popBackStack() }
-                                )
-                            }
-                            composable(
-                                route = "screenshot_detail/{id}",
-                                arguments = listOf(navArgument("id") { type = NavType.LongType })
-                            ) { backStackEntry ->
-                                val screenshotId = backStackEntry.arguments?.getLong("id") ?: 0L
-                                com.example.recallos.ui.ScreenshotDetailScreen(
-                                    screenshotId = screenshotId,
-                                    onBackClick = { navController.popBackStack() }
-                                )
-                            }
-                        }
-                    }
+                    AppNavigation(
+                        pendingTask = pendingTask,
+                        pendingNavAction = pendingNavAction,
+                        onPendingTaskConsumed = { pendingTask = null },
+                        onPendingNavConsumed  = { pendingNavAction = null }
+                    )
                 } else {
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                         Text(
@@ -170,24 +82,164 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        when (intent?.getStringExtra(AnalyzeScreenshotWorker.EXTRA_ACTION)) {
+            AnalyzeScreenshotWorker.ACTION_CREATE_TASK -> {
+                val screenshotId  = intent.getLongExtra(AnalyzeScreenshotWorker.EXTRA_SCREENSHOT_ID, -1L)
+                val screenshotUri = intent.getStringExtra(AnalyzeScreenshotWorker.EXTRA_SCREENSHOT_URI) ?: ""
+                val titleHint     = intent.getStringExtra(AnalyzeScreenshotWorker.EXTRA_TITLE_HINT) ?: ""
+                val dueDate       = if (intent.hasExtra(AnalyzeScreenshotWorker.EXTRA_DUE_DATE))
+                                        intent.getLongExtra(AnalyzeScreenshotWorker.EXTRA_DUE_DATE, 0L)
+                                    else null
+                val isEvent       = intent.getBooleanExtra(AnalyzeScreenshotWorker.EXTRA_IS_EVENT, false)
+
+                if (screenshotId >= 0) {
+                    pendingTask = PendingTaskData(
+                        screenshotId  = screenshotId,
+                        screenshotUri = screenshotUri,
+                        titleHint     = titleHint,
+                        dueDate       = dueDate,
+                        isEvent       = isEvent
+                    )
+                }
+            }
+            AnalyzeScreenshotWorker.ACTION_OPEN_STACKS -> {
+                pendingNavAction = "stacks"
+            }
+        }
+    }
+
     private fun checkPermissions() {
         val permissionsToRequest = mutableListOf<String>()
-        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
             permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
         } else {
             permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
         }
-
-        val missingPermissions = permissionsToRequest.filter {
+        val missing = permissionsToRequest.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
+        if (missing.isEmpty()) hasPermissions = true
+        else requestPermissionLauncher.launch(missing.toTypedArray())
+    }
+}
 
-        if (missingPermissions.isEmpty()) {
-            hasPermissions = true
-        } else {
-            requestPermissionLauncher.launch(missingPermissions.toTypedArray())
+@Composable
+private fun AppNavigation(
+    pendingTask: PendingTaskData?,
+    pendingNavAction: String?,
+    onPendingTaskConsumed: () -> Unit,
+    onPendingNavConsumed: () -> Unit
+) {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // Navigate to stacks tab when triggered by notification
+    androidx.compose.runtime.LaunchedEffect(pendingNavAction) {
+        if (pendingNavAction == "stacks") {
+            navController.navigate("stacks") {
+                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+            onPendingNavConsumed()
+        }
+    }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            if (currentRoute in listOf("home", "stacks", "todo")) {
+                NavigationBar {
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                        label = { Text("Home") },
+                        selected = currentRoute == "home",
+                        onClick = {
+                            navController.navigate("home") {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true; restoreState = true
+                            }
+                        }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Layers, contentDescription = "Stacks") },
+                        label = { Text("Stacks") },
+                        selected = currentRoute == "stacks",
+                        onClick = {
+                            navController.navigate("stacks") {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true; restoreState = true
+                            }
+                        }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.CheckCircle, contentDescription = "To-do") },
+                        label = { Text("To-do") },
+                        selected = currentRoute == "todo",
+                        onClick = {
+                            navController.navigate("todo") {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true; restoreState = true
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("home") {
+                HomeScreen(
+                    onScreenshotClick = { navController.navigate("screenshot_detail/$it") }
+                )
+            }
+            composable("todo") {
+                TodoScreen(
+                    onTodoClick = { navController.navigate("screenshot_detail/$it") },
+                    pendingTask = pendingTask,
+                    onPendingTaskConsumed = onPendingTaskConsumed
+                )
+            }
+            composable("stacks") {
+                MyListsScreen(
+                    onListClick = { listId ->
+                        navController.navigate("stack_detail/$listId")
+                    }
+                )
+            }
+            composable(
+                route = "stack_detail/{listId}",
+                arguments = listOf(navArgument("listId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val listId = backStackEntry.arguments?.getLong("listId") ?: 0L
+                ListDetailScreen(
+                    listId = listId,
+                    listName = "Stack",
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = "screenshot_detail/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val screenshotId = backStackEntry.arguments?.getLong("id") ?: 0L
+                com.example.recallos.ui.ScreenshotDetailScreen(
+                    screenshotId = screenshotId,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

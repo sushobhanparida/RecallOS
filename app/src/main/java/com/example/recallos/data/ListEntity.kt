@@ -3,7 +3,7 @@ package com.example.recallos.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "lists")
+@Entity(tableName = "stacks")
 data class ListEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,

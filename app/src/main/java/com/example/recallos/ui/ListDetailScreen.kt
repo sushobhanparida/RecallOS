@@ -2,6 +2,7 @@ package com.example.recallos.ui
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -10,7 +11,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -22,10 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.recallos.data.ScreenshotEntity
+import com.example.recallos.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,20 +42,34 @@ fun ListDetailScreen(
     var showAddSheet by remember { mutableStateOf(false) }
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier       = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
-                title = { Text(listName) },
+                title = {
+                    Text(
+                        listName,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = OnSurface
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = OnSurface
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { showAddSheet = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Screenshots")
+                        Icon(Icons.Default.Add, contentDescription = "Add Screenshots", tint = Primary)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
     ) { paddingValues ->
@@ -63,20 +79,46 @@ fun ListDetailScreen(
                 .padding(paddingValues)
         ) {
             if (screenshots.isEmpty()) {
-                Text(
-                    text = "No screenshots here yet.\nTap + to add some.",
-                    color = Color.Gray,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Column(
+                    modifier            = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(72.dp)
+                            .clip(RadiusCard)
+                            .background(SurfaceContainerHigh),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("🖼️", style = MaterialTheme.typography.headlineLarge)
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "This stack is empty",
+                        style     = MaterialTheme.typography.headlineSmall,
+                        color     = OnSurface,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        "Tap + to add screenshots",
+                        style     = MaterialTheme.typography.bodyMedium,
+                        color     = OnSurfaceVariant,
+                        modifier  = Modifier.padding(top = 6.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
             } else {
                 LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(150.dp),
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalItemSpacing = 8.dp
+                    columns               = StaggeredGridCells.Adaptive(150.dp),
+                    modifier              = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalItemSpacing   = 10.dp,
+                    contentPadding        = PaddingValues(vertical = 12.dp, bottom = 80.dp)
                 ) {
                     items(screenshots, key = { it.id }) { item ->
-                        StaggeredScreenshotCard(item)
+                        StackScreenshotCard(item)
                     }
                 }
             }
@@ -86,10 +128,21 @@ fun ListDetailScreen(
     if (showAddSheet) {
         ModalBottomSheet(
             onDismissRequest = { showAddSheet = false },
-            modifier = Modifier.fillMaxHeight(0.9f)
+            containerColor   = MaterialTheme.colorScheme.background,
+            modifier         = Modifier.fillMaxHeight(0.92f),
+            shape            = RadiusSheetTop,
+            dragHandle = {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 14.dp, bottom = 8.dp)
+                        .size(width = 36.dp, height = 4.dp)
+                        .clip(RadiusFull)
+                        .background(OutlineVariant)
+                )
+            }
         ) {
             AddScreenshotsSheet(
-                listId = listId,
+                listId    = listId,
                 viewModel = viewModel,
                 onDismiss = { showAddSheet = false }
             )
@@ -97,95 +150,109 @@ fun ListDetailScreen(
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
-fun StaggeredScreenshotCard(item: ScreenshotEntity) {
-    // A StaggeredGrid will adapt height based on the content's aspect ratio.
-    // We don't fix the height here, just let Coil load and proportion it.
+fun StackScreenshotCard(item: ScreenshotEntity) {
     Card(
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier.fillMaxWidth()
+        shape     = RadiusLg,
+        colors    = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+        border    = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        modifier  = Modifier.fillMaxWidth()
     ) {
         AsyncImage(
-            model = Uri.parse(item.uri),
+            model              = Uri.parse(item.uri),
             contentDescription = "Screenshot Preview",
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            modifier           = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
             contentScale = ContentScale.FillWidth
         )
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun AddScreenshotsSheet(
     listId: Long,
     viewModel: ListsViewModel,
     onDismiss: () -> Unit
 ) {
-    val allScreenshots by viewModel.allScreenshots.collectAsState()
+    val allScreenshots  by viewModel.allScreenshots.collectAsState()
     val listScreenshots by viewModel.getScreenshotsForList(listId).collectAsState(initial = emptyList())
-    
-    val listScreenshotIds = remember(listScreenshots) { listScreenshots.map { it.id }.toSet() }
+    val listIds = remember(listScreenshots) { listScreenshots.map { it.id }.toSet() }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp)
     ) {
         Text(
-            text = "Add Screenshots",
-            style = MaterialTheme.typography.titleLarge,
+            text     = "Add Screenshots",
+            style    = MaterialTheme.typography.titleLarge,
+            color    = OnSurface,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            columns               = GridCells.Fixed(3),
+            modifier              = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement   = Arrangement.spacedBy(6.dp)
         ) {
             items(allScreenshots, key = { it.id }) { item ->
-                val isSelected = listScreenshotIds.contains(item.id)
-                val isSelectPending = remember { mutableStateOf(isSelected) }
+                val isSelected = listIds.contains(item.id)
 
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RadiusLg)
+                        .border(
+                            width  = if (isSelected) 2.dp else 1.dp,
+                            color  = if (isSelected) Primary else OutlineVariant,
+                            shape  = RadiusLg
+                        )
                         .clickable {
-                            if (isSelected) {
-                                viewModel.removeScreenshotFromList(listId, item.id)
-                            } else {
-                                viewModel.addScreenshotToList(listId, item.id)
-                            }
+                            if (isSelected) viewModel.removeScreenshotFromList(listId, item.id)
+                            else viewModel.addScreenshotToList(listId, item.id)
                         }
                 ) {
                     AsyncImage(
-                        model = Uri.parse(item.uri),
+                        model              = Uri.parse(item.uri),
                         contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                        alpha = if (isSelected) 0.5f else 1f
+                        modifier           = Modifier.fillMaxSize(),
+                        contentScale       = ContentScale.Crop,
+                        alpha              = if (isSelected) 0.55f else 1f
                     )
                     if (isSelected) {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            contentDescription = "Selected",
-                            tint = MaterialTheme.colorScheme.primary,
+                        Box(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(4.dp)
-                                .size(24.dp)
-                        )
+                                .padding(6.dp)
+                                .size(22.dp)
+                                .clip(RadiusFull)
+                                .background(Primary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = "Selected",
+                                tint     = OnPrimary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = onDismiss,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Done")
-        }
+            onClick  = onDismiss,
+            modifier = Modifier.fillMaxWidth(),
+            colors   = ButtonDefaults.buttonColors(containerColor = Primary),
+            shape    = RadiusMd
+        ) { Text("Done") }
         Spacer(modifier = Modifier.height(32.dp))
     }
 }

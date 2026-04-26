@@ -27,6 +27,9 @@ interface TodoDao {
     @Query("SELECT * FROM todos WHERE screenshotId = :screenshotId LIMIT 1")
     suspend fun getTodoByScreenshotId(screenshotId: Long): TodoEntity?
 
+    @Query("SELECT * FROM todos WHERE isEvent = 1 ORDER BY dueDate ASC")
+    fun getEventTodos(): Flow<List<TodoEntity>>
+
     @Query("DELETE FROM todos WHERE id = :id")
     suspend fun deleteTodo(id: Long)
 }
