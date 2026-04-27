@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -25,9 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -56,74 +53,44 @@ fun HomeScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 20.dp)
-            .padding(top = 24.dp)
     ) {
-        // ── Page title ───────────────────────────────────────────────────────
-        Text(
-            text = "Your Screenshots",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 20.dp)
-        )
-
-        // ── Gallery Import Banner ────────────────────────────────────────────
+        // ── Header: title + import icon button ───────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RadiusCard)
-                .background(MaterialTheme.colorScheme.surface)
-                .border(
-                    width = 1.dp,
-                    color = OutlineVariant,
-                    shape = RadiusCard
-                )
-                .clickable {
+                .padding(start = 20.dp, end = 4.dp, top = 24.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text     = "Screenshots",
+                style    = MaterialTheme.typography.headlineMedium,
+                color    = OnSurface,
+                modifier = Modifier.weight(1f)
+            )
+            IconButton(
+                onClick = {
                     photoPickerLauncher.launch(
                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
                 }
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RadiusMd)
-                    .background(SecondaryContainer),
-                contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.AddPhotoAlternate,
-                    contentDescription = null,
-                    tint = Secondary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Import from Gallery",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = "Choose screenshots to add to RecallOS",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = OnSurfaceVariant
+                    imageVector        = Icons.Default.AddPhotoAlternate,
+                    contentDescription = "Import from Gallery",
+                    tint               = Primary,
+                    modifier           = Modifier.size(26.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ── Search ───────────────────────────────────────────────────────────
-        OutlinedTextField(
-            value = searchQuery,
+        // ── Filled pill search bar ───────────────────────────────────────────
+        TextField(
+            value         = searchQuery,
             onValueChange = { viewModel.setSearchQuery(it) },
-            modifier = Modifier
+            modifier      = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp),
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 10.dp),
             placeholder = {
                 Text(
                     "Search screenshots…",
@@ -134,63 +101,65 @@ fun HomeScreen(
             leadingIcon = {
                 Icon(
                     Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = OnSurfaceVariant
+                    contentDescription = null,
+                    tint     = OnSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
             },
-            shape = RadiusLg,
+            shape      = RadiusFull,
             singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor   = Primary,
-                unfocusedBorderColor = OutlineVariant,
-                cursorColor          = Primary,
-                focusedLeadingIconColor = Primary
+            colors     = TextFieldDefaults.colors(
+                focusedContainerColor     = SurfaceContainerLow,
+                unfocusedContainerColor   = SurfaceContainerLow,
+                focusedIndicatorColor     = Color.Transparent,
+                unfocusedIndicatorColor   = Color.Transparent,
+                disabledIndicatorColor    = Color.Transparent,
+                cursorColor               = Primary,
+                focusedLeadingIconColor   = Primary,
+                unfocusedLeadingIconColor = OnSurfaceVariant
             )
         )
 
-        // ── Tag filters ──────────────────────────────────────────────────────
+        // ── Category filter chips ────────────────────────────────────────────
         val tags = listOf("All", "Shopping", "Link", "Event", "Read", "General")
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(bottom = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             tags.forEach { tag ->
                 FilterChip(
                     selected = currentFilter == tag,
                     onClick  = { viewModel.setFilter(tag) },
-                    label    = {
-                        Text(
-                            tag,
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor     = PrimaryContainer,
-                        selectedLabelColor         = OnPrimaryContainer,
-                        containerColor             = SurfaceContainerLow,
-                        labelColor                 = OnSurfaceVariant
+                    label    = { Text(tag, style = MaterialTheme.typography.labelMedium) },
+                    colors   = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Primary,
+                        selectedLabelColor     = OnPrimary,
+                        containerColor         = SurfaceContainerLow,
+                        labelColor             = OnSurfaceVariant
                     ),
                     border = FilterChipDefaults.filterChipBorder(
-                        borderColor         = OutlineVariant,
-                        selectedBorderColor = PrimaryContainer,
-                        enabled = true,
-                        selected = currentFilter == tag
+                        borderColor         = Color.Transparent,
+                        selectedBorderColor = Color.Transparent,
+                        enabled             = true,
+                        selected            = currentFilter == tag
                     )
                 )
             }
         }
 
+        // ── Import progress bar ──────────────────────────────────────────────
         if (isImporting) {
             LinearProgressIndicator(
-                modifier = Modifier
+                modifier   = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
                     .clip(RadiusFull)
                     .padding(bottom = 8.dp),
-                color       = Primary,
-                trackColor  = SurfaceContainerHigh
+                color      = Primary,
+                trackColor = SurfaceContainerHigh
             )
         }
 
@@ -201,42 +170,44 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .size(80.dp)
-                            .clip(RadiusCard)
+                            .clip(RadiusFull)
                             .background(SurfaceContainerHigh),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Image,
+                            imageVector        = Icons.Default.Image,
                             contentDescription = null,
-                            modifier = Modifier.size(40.dp),
-                            tint = OutlineVariant
+                            modifier           = Modifier.size(36.dp),
+                            tint               = OnSurfaceVariant
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        text = "No screenshots yet",
+                        "No screenshots yet",
                         style = MaterialTheme.typography.headlineSmall,
                         color = OnSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Use \"Import from Gallery\" above\nor tap Save when you take a screenshot",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = OnSurfaceVariant,
+                        "Tap ⊕ above to import from gallery",
+                        style     = MaterialTheme.typography.bodyMedium,
+                        color     = OnSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                 }
             }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement   = Arrangement.spacedBy(12.dp),
+                columns               = GridCells.Fixed(2),
+                modifier              = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement   = Arrangement.spacedBy(8.dp),
                 contentPadding        = PaddingValues(bottom = 80.dp)
             ) {
                 items(screenshots) { item ->
-                    ScreenshotCard(
+                    ScreenshotThumbnail(
                         item    = item,
                         onClick = { onScreenshotClick(item.id) }
                     )
@@ -247,50 +218,32 @@ fun HomeScreen(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Pure image thumbnail — no card chrome, just clipped image + tag pill overlay
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
-fun ScreenshotCard(
+fun ScreenshotThumbnail(
     item: ScreenshotEntity,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit
 ) {
-    Card(
-        shape  = RadiusCard,
-        colors = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        border = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(220.dp)
+            .aspectRatio(9f / 16f)
+            .clip(RadiusCard)
             .clickable { onClick() }
     ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(148.dp)
-            ) {
-                AsyncImage(
-                    model              = Uri.parse(item.uri),
-                    contentDescription = "Screenshot Preview",
-                    modifier           = Modifier
-                        .fillMaxSize()
-                        .clip(RadiusCardTop),
-                    contentScale = ContentScale.Crop
-                )
-                TagBadge(
-                    tag      = item.tag,
-                    modifier = Modifier.padding(10.dp)
-                )
-            }
-            Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                Text(
-                    text     = item.extractedText,
-                    style    = MaterialTheme.typography.bodySmall,
-                    color    = OnSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
+        AsyncImage(
+            model              = Uri.parse(item.uri),
+            contentDescription = "Screenshot",
+            modifier           = Modifier.fillMaxSize(),
+            contentScale       = ContentScale.Crop
+        )
+        TagBadge(
+            tag      = item.tag,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(8.dp)
+        )
     }
 }
 
@@ -307,14 +260,14 @@ fun TagBadge(tag: String, modifier: Modifier = Modifier) {
     }
     Box(
         modifier = modifier
-            .clip(RadiusSm)
-            .background(bgColor.copy(alpha = 0.88f))
-            .padding(horizontal = 8.dp, vertical = 3.dp)
+            .clip(RadiusFull)
+            .background(bgColor.copy(alpha = 0.92f))
+            .padding(horizontal = 10.dp, vertical = 4.dp)
     ) {
         Text(
             text  = tag,
-            color = OnPrimary,   // white — text on coloured tag badge
-            style = MaterialTheme.typography.labelSmall,
+            color = OnPrimary,
+            style = MaterialTheme.typography.labelSmall
         )
     }
 }

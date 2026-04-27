@@ -2,7 +2,6 @@ package com.example.recallos.ui
 
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -10,17 +9,16 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -56,13 +54,13 @@ fun MyListsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp, vertical = 24.dp)
+                .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
             Text(
-                text     = "My Stacks",
+                text     = "Stacks",
                 style    = MaterialTheme.typography.headlineMedium,
                 color    = OnSurface,
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.padding(start = 4.dp, bottom = 20.dp)
             )
 
             if (lists.isEmpty()) {
@@ -70,14 +68,19 @@ fun MyListsScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             modifier = Modifier
-                                .size(72.dp)
-                                .clip(RadiusCard)
+                                .size(80.dp)
+                                .clip(RadiusFull)
                                 .background(SurfaceContainerHigh),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("📚", style = MaterialTheme.typography.headlineLarge)
+                            Icon(
+                                imageVector        = Icons.Default.PhotoLibrary,
+                                contentDescription = null,
+                                modifier           = Modifier.size(36.dp),
+                                tint               = OnSurfaceVariant
+                            )
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
                         Text(
                             "No stacks yet",
                             style = MaterialTheme.typography.headlineSmall,
@@ -95,12 +98,12 @@ fun MyListsScreen(
                 LazyVerticalGrid(
                     columns               = GridCells.Fixed(2),
                     modifier              = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalArrangement   = Arrangement.spacedBy(28.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement   = Arrangement.spacedBy(16.dp),
                     contentPadding        = PaddingValues(bottom = 80.dp)
                 ) {
                     items(lists) { listEntity ->
-                        StackGridItem(
+                        StackAlbumItem(
                             listEntity = listEntity,
                             viewModel  = viewModel,
                             onClick    = { onListClick(listEntity.id) }
@@ -119,21 +122,25 @@ fun MyListsScreen(
             shape            = RadiusCard,
             title = {
                 Text(
-                    "Create New Stack",
+                    "New Stack",
                     style = MaterialTheme.typography.titleLarge,
                     color = OnSurface
                 )
             },
             text = {
-                OutlinedTextField(
+                TextField(
                     value         = newListName,
                     onValueChange = { newListName = it },
-                    label         = { Text("Stack Name") },
+                    placeholder   = { Text("Stack name") },
                     singleLine    = true,
                     shape         = RadiusLg,
-                    colors        = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor   = Primary,
-                        unfocusedBorderColor = OutlineVariant
+                    modifier      = Modifier.fillMaxWidth(),
+                    colors        = TextFieldDefaults.colors(
+                        focusedContainerColor   = SurfaceContainerLow,
+                        unfocusedContainerColor = SurfaceContainerLow,
+                        focusedIndicatorColor   = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor             = Primary
                     )
                 )
             },
@@ -149,19 +156,19 @@ fun MyListsScreen(
                 ) { Text("Create") }
             },
             dismissButton = {
-                OutlinedButton(
-                    onClick = { showCreateDialog = false },
-                    shape   = RadiusMd,
-                    border  = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
-                ) { Text("Cancel", color = OnSurfaceVariant) }
+                TextButton(onClick = { showCreateDialog = false }) {
+                    Text("Cancel", color = OnSurfaceVariant)
+                }
             }
         )
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Google Photos–style album card: full-cover image + gradient + name below
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
-fun StackGridItem(
+fun StackAlbumItem(
     listEntity: ListEntity,
     viewModel: ListsViewModel,
     onClick: () -> Unit
@@ -172,89 +179,83 @@ fun StackGridItem(
         .collectAsState(initial = 0)
 
     Column(
-        modifier            = Modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
-        horizontalAlignment = Alignment.CenterHorizontally
+            .clickable { onClick() }
     ) {
-        LayeredCoverPreview(coverUris)
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text      = listEntity.name,
-            style     = MaterialTheme.typography.titleMedium,
-            color     = OnSurface,
-            textAlign = TextAlign.Center
-        )
-        Text(
-            text      = if (count == 1) "1 screenshot" else "$count screenshots",
-            style     = MaterialTheme.typography.labelMedium,
-            color     = OnSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier  = Modifier.padding(top = 2.dp)
-        )
-    }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-@Composable
-fun LayeredCoverPreview(coverUris: List<String>) {
-    Box(
-        modifier            = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .padding(12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        if (coverUris.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(0.85f)
-                    .clip(RadiusCard)
-                    .background(SurfaceContainerHigh)
-                    .border(1.dp, OutlineVariant, RadiusCard)
-            )
-        } else {
-            val uris = coverUris.take(3)
-
-            if (uris.size >= 3) {
+        // ── Cover thumbnail ──────────────────────────────────────────────────
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .clip(RadiusCard)
+        ) {
+            if (coverUris.isEmpty()) {
+                Box(
+                    modifier         = Modifier
+                        .fillMaxSize()
+                        .background(SurfaceContainerHigh),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector        = Icons.Default.PhotoLibrary,
+                        contentDescription = null,
+                        modifier           = Modifier.size(36.dp),
+                        tint               = OutlineVariant
+                    )
+                }
+            } else {
                 AsyncImage(
-                    model              = Uri.parse(uris[2]),
+                    model              = Uri.parse(coverUris[0]),
                     contentDescription = null,
-                    contentScale       = ContentScale.Crop,
-                    modifier           = Modifier
-                        .fillMaxSize(0.70f)
-                        .offset(x = (-14).dp, y = (-10).dp)
-                        .rotate(-7f)
-                        .clip(RadiusCard)
-                        .shadow(2.dp, RadiusCard)
-                        .background(SurfaceContainerLowest)
+                    modifier           = Modifier.fillMaxSize(),
+                    contentScale       = ContentScale.Crop
                 )
-            }
-            if (uris.size >= 2) {
-                AsyncImage(
-                    model              = Uri.parse(uris[1]),
-                    contentDescription = null,
-                    contentScale       = ContentScale.Crop,
-                    modifier           = Modifier
-                        .fillMaxSize(0.74f)
-                        .offset(x = 14.dp, y = (-4).dp)
-                        .rotate(9f)
-                        .clip(RadiusCard)
-                        .shadow(3.dp, RadiusCard)
-                        .background(SurfaceContainerLowest)
+                // Bottom gradient scrim
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.52f))
+                            )
+                        )
                 )
+                // Photo count badge
+                if (count > 0) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp)
+                            .clip(RadiusFull)
+                            .background(Color.Black.copy(alpha = 0.52f))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text  = "$count",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = OnPrimary
+                        )
+                    }
+                }
             }
-            AsyncImage(
-                model              = Uri.parse(uris[0]),
-                contentDescription = null,
-                contentScale       = ContentScale.Crop,
-                modifier           = Modifier
-                    .fillMaxSize(0.84f)
-                    .offset(y = 6.dp)
-                    .clip(RadiusCard)
-                    .shadow(6.dp, RadiusCard)
-                    .background(SurfaceContainerLowest)
-            )
         }
+
+        // ── Name + count ─────────────────────────────────────────────────────
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text     = listEntity.name,
+            style    = MaterialTheme.typography.titleSmall,
+            color    = OnSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text  = if (count == 1) "1 screenshot" else "$count screenshots",
+            style = MaterialTheme.typography.labelSmall,
+            color = OnSurfaceVariant
+        )
     }
 }

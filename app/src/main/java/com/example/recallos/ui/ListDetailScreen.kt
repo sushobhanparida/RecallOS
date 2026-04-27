@@ -15,12 +15,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -63,8 +63,14 @@ fun ListDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showAddSheet = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Screenshots", tint = Primary)
+                    FilledTonalIconButton(
+                        onClick = { showAddSheet = true },
+                        colors  = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = PrimaryContainer,
+                            contentColor   = Primary
+                        )
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Add Screenshots")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -85,14 +91,19 @@ fun ListDetailScreen(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(72.dp)
-                            .clip(RadiusCard)
+                            .size(80.dp)
+                            .clip(RadiusFull)
                             .background(SurfaceContainerHigh),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("🖼️", style = MaterialTheme.typography.headlineLarge)
+                        Icon(
+                            imageVector        = Icons.Default.PhotoLibrary,
+                            contentDescription = null,
+                            modifier           = Modifier.size(36.dp),
+                            tint               = OnSurfaceVariant
+                        )
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
                         "This stack is empty",
                         style     = MaterialTheme.typography.headlineSmall,
@@ -108,17 +119,18 @@ fun ListDetailScreen(
                     )
                 }
             } else {
+                // Staggered grid — images at their natural aspect ratio
                 LazyVerticalStaggeredGrid(
-                    columns               = StaggeredGridCells.Adaptive(150.dp),
+                    columns               = StaggeredGridCells.Fixed(2),
                     modifier              = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalItemSpacing   = 10.dp,
-                    contentPadding        = PaddingValues(vertical = 12.dp, bottom = 80.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalItemSpacing   = 8.dp,
+                    contentPadding        = PaddingValues(top = 12.dp, bottom = 80.dp)
                 ) {
                     items(screenshots, key = { it.id }) { item ->
-                        StackScreenshotCard(item)
+                        StackThumbnail(item)
                     }
                 }
             }
@@ -151,24 +163,19 @@ fun ListDetailScreen(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Bare thumbnail — no Card wrapper, just a clipped image
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
-fun StackScreenshotCard(item: ScreenshotEntity) {
-    Card(
-        shape     = RadiusLg,
-        colors    = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        border    = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier  = Modifier.fillMaxWidth()
-    ) {
-        AsyncImage(
-            model              = Uri.parse(item.uri),
-            contentDescription = "Screenshot Preview",
-            modifier           = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            contentScale = ContentScale.FillWidth
-        )
-    }
+fun StackThumbnail(item: ScreenshotEntity) {
+    AsyncImage(
+        model              = Uri.parse(item.uri),
+        contentDescription = "Screenshot",
+        modifier           = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .clip(RadiusLg),
+        contentScale = ContentScale.FillWidth
+    )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -205,13 +212,8 @@ fun AddScreenshotsSheet(
 
                 Box(
                     modifier = Modifier
-                        .aspectRatio(1f)
-                        .clip(RadiusLg)
-                        .border(
-                            width  = if (isSelected) 2.dp else 1.dp,
-                            color  = if (isSelected) Primary else OutlineVariant,
-                            shape  = RadiusLg
-                        )
+                        .aspectRatio(9f / 16f)
+                        .clip(RadiusMd)
                         .clickable {
                             if (isSelected) viewModel.removeScreenshotFromList(listId, item.id)
                             else viewModel.addScreenshotToList(listId, item.id)
@@ -228,7 +230,7 @@ fun AddScreenshotsSheet(
                         Box(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(6.dp)
+                                .padding(5.dp)
                                 .size(22.dp)
                                 .clip(RadiusFull)
                                 .background(Primary),

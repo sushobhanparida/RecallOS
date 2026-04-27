@@ -2,7 +2,7 @@ package com.example.recallos.ui
 
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,7 +20,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -42,156 +41,153 @@ fun ScreenshotDetailScreen(
     val screenshot by viewModel.screenshotState.collectAsState()
     val todo       by viewModel.todoState.collectAsState()
 
-    val dateFormat = SimpleDateFormat("MMMM d'th', yyyy 'at' h:mm a", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("MMMM d, yyyy 'at' h:mm a", Locale.getDefault())
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Details",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = OnSurface
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = OnSurface
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         if (screenshot != null) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // ── Hero Image ───────────────────────────────────────────────
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp)
+                // ── Full-width hero image — no padding, no border ─────────────
+                AsyncImage(
+                    model              = Uri.parse(screenshot!!.uri),
+                    contentDescription = "Screenshot",
+                    modifier           = Modifier
                         .fillMaxWidth()
-                        .clip(RadiusCard)
-                        .border(1.dp, OutlineVariant, RadiusCard)
-                ) {
-                    AsyncImage(
-                        model              = Uri.parse(screenshot!!.uri),
-                        contentDescription = "Full Screenshot",
-                        modifier           = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 400.dp),
-                        contentScale = ContentScale.Fit
-                    )
-                }
+                        .wrapContentHeight(),
+                    contentScale = ContentScale.FillWidth
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-
-                    // ── Associated Task card ─────────────────────────────────
+                // ── Detail rows ───────────────────────────────────────────────
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                ) {
                     if (todo != null) {
-                        DetailCard(
+                        DetailInfoRow(
                             icon      = Icons.Default.Assignment,
-                            title     = if (todo!!.isEvent) "Associated Event" else "Associated Task",
+                            title     = if (todo!!.isEvent) "Event" else "Task",
                             content   = todo!!.title,
                             iconColor = if (todo!!.isEvent) Secondary else Primary
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        HorizontalDivider(
+                            modifier  = Modifier.padding(vertical = 4.dp),
+                            color     = OutlineVariant.copy(alpha = 0.5f),
+                            thickness = 0.5.dp
+                        )
                     }
 
-                    // ── Tag ──────────────────────────────────────────────────
-                    DetailCard(
+                    DetailInfoRow(
                         icon      = Icons.Default.Label,
                         title     = "Category",
                         content   = screenshot!!.tag,
                         iconColor = Secondary
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(
+                        modifier  = Modifier.padding(vertical = 4.dp),
+                        color     = OutlineVariant.copy(alpha = 0.5f),
+                        thickness = 0.5.dp
+                    )
 
-                    // ── Captured on ──────────────────────────────────────────
-                    DetailCard(
+                    DetailInfoRow(
                         icon      = Icons.Default.Schedule,
-                        title     = "Captured On",
+                        title     = "Captured",
                         content   = dateFormat.format(Date(screenshot!!.createdAt)),
                         iconColor = Tertiary
                     )
 
-                    // ── Extracted text ───────────────────────────────────────
                     if (screenshot!!.extractedText.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        DetailCard(
+                        HorizontalDivider(
+                            modifier  = Modifier.padding(vertical = 4.dp),
+                            color     = OutlineVariant.copy(alpha = 0.5f),
+                            thickness = 0.5.dp
+                        )
+                        DetailInfoRow(
                             icon      = Icons.Default.Description,
-                            title     = "Extracted Text (OCR)",
+                            title     = "Extracted text",
                             content   = screenshot!!.extractedText,
                             iconColor = Outline
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(40.dp))
                 }
             }
-        } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Primary)
+
+            // ── Floating back button overlaid on the image ────────────────────
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(top = 12.dp, start = 12.dp)
+                    .size(40.dp)
+                    .clip(RadiusFull)
+                    .background(Color.Black.copy(alpha = 0.45f))
+                    .clickable { onBackClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint               = OnPrimary,
+                    modifier           = Modifier.size(20.dp)
+                )
             }
+        } else {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color    = Primary
+            )
         }
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Clean detail row — icon + label + content, no card chrome
+// ─────────────────────────────────────────────────────────────────────────────
 @Composable
-fun DetailCard(
+fun DetailInfoRow(
     icon: ImageVector,
     title: String,
     content: String,
     iconColor: Color
 ) {
-    Card(
-        shape     = RadiusCard,
-        colors    = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
-        border    = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier  = Modifier.fillMaxWidth()
+    Row(
+        modifier          = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 14.dp),
+        verticalAlignment = Alignment.Top
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp)
+                .size(36.dp)
+                .clip(RadiusMd)
+                .background(iconColor.copy(alpha = 0.10f)),
+            contentAlignment = Alignment.Center
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(RadiusMd)
-                        .background(iconColor.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector        = icon,
-                        contentDescription = title,
-                        tint               = iconColor,
-                        modifier           = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text  = title,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = OnSurfaceVariant
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
+            Icon(
+                imageVector        = icon,
+                contentDescription = title,
+                tint               = iconColor,
+                modifier           = Modifier.size(18.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text  = title,
+                style = MaterialTheme.typography.labelMedium,
+                color = OnSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(3.dp))
             Text(
                 text  = content,
                 style = MaterialTheme.typography.bodyMedium,
@@ -200,3 +196,12 @@ fun DetailCard(
         }
     }
 }
+
+// Keep the old name as an alias so existing call-sites compile
+@Composable
+fun DetailCard(
+    icon: ImageVector,
+    title: String,
+    content: String,
+    iconColor: Color
+) = DetailInfoRow(icon = icon, title = title, content = content, iconColor = iconColor)

@@ -25,6 +25,11 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import com.example.recallos.ui.theme.OnSurface
+import com.example.recallos.ui.theme.OnSurfaceVariant
+import com.example.recallos.ui.theme.Primary
+import com.example.recallos.ui.theme.PrimaryContainer
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -157,12 +162,23 @@ private fun AppNavigation(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             if (currentRoute in listOf("home", "stacks", "todo")) {
-                NavigationBar {
+                val navItemColors = NavigationBarItemDefaults.colors(
+                    selectedIconColor   = Primary,
+                    selectedTextColor   = Primary,
+                    indicatorColor      = PrimaryContainer,
+                    unselectedIconColor = OnSurfaceVariant,
+                    unselectedTextColor = OnSurfaceVariant
+                )
+                NavigationBar(
+                    containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                    tonalElevation = 0.dp
+                ) {
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                        label = { Text("Home") },
+                        icon     = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                        label    = { Text("Home") },
                         selected = currentRoute == "home",
-                        onClick = {
+                        colors   = navItemColors,
+                        onClick  = {
                             navController.navigate("home") {
                                 popUpTo(navController.graph.startDestinationId) { saveState = true }
                                 launchSingleTop = true; restoreState = true
@@ -170,10 +186,11 @@ private fun AppNavigation(
                         }
                     )
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.Layers, contentDescription = "Stacks") },
-                        label = { Text("Stacks") },
+                        icon     = { Icon(Icons.Default.Layers, contentDescription = "Stacks") },
+                        label    = { Text("Stacks") },
                         selected = currentRoute == "stacks",
-                        onClick = {
+                        colors   = navItemColors,
+                        onClick  = {
                             navController.navigate("stacks") {
                                 popUpTo(navController.graph.startDestinationId) { saveState = true }
                                 launchSingleTop = true; restoreState = true
@@ -181,10 +198,11 @@ private fun AppNavigation(
                         }
                     )
                     NavigationBarItem(
-                        icon = { Icon(Icons.Default.CheckCircle, contentDescription = "To-do") },
-                        label = { Text("To-do") },
+                        icon     = { Icon(Icons.Default.CheckCircle, contentDescription = "To-do") },
+                        label    = { Text("To-do") },
                         selected = currentRoute == "todo",
-                        onClick = {
+                        colors   = navItemColors,
+                        onClick  = {
                             navController.navigate("todo") {
                                 popUpTo(navController.graph.startDestinationId) { saveState = true }
                                 launchSingleTop = true; restoreState = true

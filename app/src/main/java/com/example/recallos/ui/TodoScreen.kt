@@ -25,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -76,7 +75,7 @@ fun TodoScreen(
 
     val currentDate = Date()
     val dayFormat   = SimpleDateFormat("EEEE", Locale.getDefault())
-    val dateFormat  = SimpleDateFormat("MMMM d'th', yyyy", Locale.getDefault())
+    val dateFormat  = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
     val isAllEmpty  = morningTodos.isEmpty() && afternoonTodos.isEmpty() &&
                       anytimeTodos.isEmpty() && eventTodos.isEmpty()
 
@@ -98,10 +97,10 @@ fun TodoScreen(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick          = { editingTodo = null; showDialog = true },
-                containerColor   = Primary,
-                contentColor     = OnPrimary,
-                shape            = RadiusFull
+                onClick        = { editingTodo = null; showDialog = true },
+                containerColor = Primary,
+                contentColor   = OnPrimary,
+                shape          = RadiusFull
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Task")
             }
@@ -112,27 +111,20 @@ fun TodoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(top = 48.dp, start = 20.dp, end = 20.dp)
+                .padding(top = 32.dp, start = 20.dp, end = 20.dp)
         ) {
             // ── Date header ─────────────────────────────────────────────────
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text  = dayFormat.format(currentDate),
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = OnSurface
-                )
-                Text(
-                    text      = dateFormat.format(currentDate),
-                    style     = MaterialTheme.typography.bodyMedium,
-                    color     = OnSurfaceVariant,
-                    modifier  = Modifier.padding(top = 4.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text  = dayFormat.format(currentDate),
+                style = MaterialTheme.typography.headlineLarge,
+                color = OnSurface
+            )
+            Text(
+                text     = dateFormat.format(currentDate),
+                style    = MaterialTheme.typography.bodyMedium,
+                color    = OnSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp, bottom = 28.dp)
+            )
 
             if (isAllEmpty) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -140,14 +132,14 @@ fun TodoScreen(
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
-                                .clip(RadiusCard)
+                                .clip(RadiusFull)
                                 .background(SurfaceContainerHigh),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                modifier = Modifier.size(36.dp),
+                                modifier = Modifier.size(32.dp),
                                 tint     = Primary.copy(alpha = 0.6f)
                             )
                         }
@@ -158,7 +150,7 @@ fun TodoScreen(
                             color = OnSurface
                         )
                         Text(
-                            "Tap + to add a task.",
+                            "Tap + to add a task",
                             style    = MaterialTheme.typography.bodyMedium,
                             color    = OnSurfaceVariant,
                             modifier = Modifier.padding(top = 8.dp)
@@ -172,21 +164,21 @@ fun TodoScreen(
                 ) {
                     item {
                         TodoSection(
-                            title           = "EVENTS",
-                            todos           = eventTodos,
-                            sectionColor    = Primary,
-                            isEventSection  = true,
+                            title            = "Events",
+                            todos            = eventTodos,
+                            sectionColor     = Primary,
+                            isEventSection   = true,
                             onToggleComplete = { viewModel.toggleComplete(it) },
-                            onSetReminder   = { viewModel.setReminder(it) },
-                            onTodoClick     = onTodoClick,
-                            onEdit          = { editingTodo = it; showDialog = true },
-                            onDelete        = { viewModel.deleteTodo(it) }
+                            onSetReminder    = { viewModel.setReminder(it) },
+                            onTodoClick      = onTodoClick,
+                            onEdit           = { editingTodo = it; showDialog = true },
+                            onDelete         = { viewModel.deleteTodo(it) }
                         )
                     }
-                    item { if (eventTodos.isNotEmpty()) Spacer(Modifier.height(16.dp)) }
+                    item { if (eventTodos.isNotEmpty()) Spacer(Modifier.height(20.dp)) }
                     item {
                         TodoSection(
-                            title            = "ANYTIME",
+                            title            = "Anytime",
                             todos            = anytimeTodos,
                             sectionColor     = Tertiary,
                             onToggleComplete = { viewModel.toggleComplete(it) },
@@ -196,10 +188,10 @@ fun TodoScreen(
                             onDelete         = { viewModel.deleteTodo(it) }
                         )
                     }
-                    item { Spacer(Modifier.height(16.dp)) }
+                    item { Spacer(Modifier.height(20.dp)) }
                     item {
                         TodoSection(
-                            title            = "MORNING",
+                            title            = "Morning",
                             todos            = morningTodos,
                             sectionColor     = Secondary,
                             onToggleComplete = { viewModel.toggleComplete(it) },
@@ -209,10 +201,10 @@ fun TodoScreen(
                             onDelete         = { viewModel.deleteTodo(it) }
                         )
                     }
-                    item { Spacer(Modifier.height(16.dp)) }
+                    item { Spacer(Modifier.height(20.dp)) }
                     item {
                         TodoSection(
-                            title            = "AFTERNOON",
+                            title            = "Afternoon",
                             todos            = afternoonTodos,
                             sectionColor     = Primary,
                             onToggleComplete = { viewModel.toggleComplete(it) },
@@ -229,7 +221,7 @@ fun TodoScreen(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Section header + list
+// Section — simple text label + thin divider (no pill badge)
 // ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun TodoSection(
@@ -246,42 +238,51 @@ fun TodoSection(
     if (todos.isEmpty()) return
 
     Column {
-        // Section pill header
+        // ── Section header ───────────────────────────────────────────────────
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .wrapContentWidth()
-                .clip(RadiusFull)
-                .background(sectionColor.copy(alpha = 0.10f))
-                .border(1.dp, sectionColor.copy(alpha = 0.25f), RadiusFull)
-                .padding(horizontal = 14.dp, vertical = 6.dp)
+            modifier          = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         ) {
-            Icon(
-                imageVector = if (isEventSection) Icons.Default.CalendarMonth
-                              else Icons.Default.KeyboardArrowDown,
-                contentDescription = null,
-                tint     = sectionColor,
-                modifier = Modifier.size(14.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
+            if (isEventSection) {
+                Icon(
+                    imageVector        = Icons.Default.CalendarMonth,
+                    contentDescription = null,
+                    tint               = sectionColor,
+                    modifier           = Modifier.size(15.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+            }
             Text(
-                text  = "$title (${todos.size})",
+                text  = title.uppercase(),
                 style = MaterialTheme.typography.labelMedium,
                 color = sectionColor
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text  = "${todos.size}",
+                style = MaterialTheme.typography.labelMedium,
+                color = sectionColor.copy(alpha = 0.55f)
+            )
+            Spacer(modifier = Modifier.weight(1f))
         }
+        HorizontalDivider(
+            modifier  = Modifier.padding(bottom = 10.dp),
+            color     = OutlineVariant.copy(alpha = 0.6f),
+            thickness = 0.5.dp
+        )
 
-        Spacer(modifier = Modifier.height(10.dp))
-
+        // ── Task rows ────────────────────────────────────────────────────────
         todos.forEach { todo ->
             TodoItemRow(
-                todo            = todo,
-                isEventSection  = isEventSection,
+                todo             = todo,
+                isEventSection   = isEventSection,
                 onToggleComplete = { onToggleComplete(todo) },
-                onSetReminder   = { onSetReminder(todo) },
-                onClick         = { onTodoClick(todo.screenshotId) },
-                onEdit          = { onEdit(todo) },
-                onDelete        = { onDelete(todo) }
+                onSetReminder    = { onSetReminder(todo) },
+                onClick          = { onTodoClick(todo.screenshotId) },
+                onEdit           = { onEdit(todo) },
+                onDelete         = { onDelete(todo) }
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -289,7 +290,7 @@ fun TodoSection(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Individual row
+// Individual row — elevated Card (no visible border)
 // ─────────────────────────────────────────────────────────────────────────────
 @Composable
 fun TodoItemRow(
@@ -306,98 +307,106 @@ fun TodoItemRow(
         SimpleDateFormat("MMM d, h:mm a", Locale.getDefault()).format(Date(it))
     }
 
-    Row(
-        modifier = Modifier
+    Card(
+        shape     = RadiusXl,
+        colors    = CardDefaults.cardColors(containerColor = SurfaceContainerLowest),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier  = Modifier
             .fillMaxWidth()
-            .clip(RadiusXl)
-            .background(SurfaceContainerLowest)
-            .border(1.dp, OutlineVariant, RadiusXl)
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Thumbnail
-        if (todo.screenshotUri.isNotEmpty()) {
-            AsyncImage(
-                model              = Uri.parse(todo.screenshotUri),
-                contentDescription = "Thumbnail",
-                modifier           = Modifier
-                    .size(44.dp)
-                    .clip(RadiusMd),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-        }
-
-        // Title + subtitle
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text  = todo.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = OnSurface
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            if (isEventSection && dueDateStr != null) {
-                Text(
-                    text  = dueDateStr,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Primary
+        Row(
+            modifier          = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Screenshot thumbnail
+            if (todo.screenshotUri.isNotEmpty()) {
+                AsyncImage(
+                    model              = Uri.parse(todo.screenshotUri),
+                    contentDescription = "Thumbnail",
+                    modifier           = Modifier
+                        .size(44.dp)
+                        .clip(RadiusMd),
+                    contentScale = ContentScale.Crop
                 )
-            } else {
-                Text(
-                    text  = todo.duration,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = OnSurfaceVariant
-                )
+                Spacer(modifier = Modifier.width(12.dp))
             }
-        }
 
-        // Event badge | Task actions
-        if (isEventSection) {
-            Box(
-                modifier = Modifier
-                    .clip(RadiusMd)
-                    .background(PrimaryContainer)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                Icon(
-                    Icons.Default.CalendarMonth,
-                    contentDescription = "Event",
-                    tint     = OnPrimaryContainer,
-                    modifier = Modifier.size(18.dp)
+            // Title + subtitle
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text  = todo.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (todo.isCompleted) OnSurfaceVariant else OnSurface
                 )
-            }
-        } else {
-            // Alarm bell
-            if (todo.dueDate != null && !todo.isReminded && !todo.isCompleted) {
-                IconButton(onClick = onSetReminder) {
-                    Icon(
-                        Icons.Default.Alarm,
-                        contentDescription = "Set Reminder",
-                        tint = SecondaryContainer
+                Spacer(modifier = Modifier.height(2.dp))
+                if (isEventSection && dueDateStr != null) {
+                    Text(
+                        text  = dueDateStr,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Primary
+                    )
+                } else if (!isEventSection) {
+                    Text(
+                        text  = todo.duration,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OnSurfaceVariant
                     )
                 }
             }
-            // Checkbox
-            IconButton(onClick = onToggleComplete) {
-                Icon(
-                    imageVector = if (todo.isCompleted) Icons.Default.CheckCircle
-                                  else Icons.Outlined.Circle,
-                    contentDescription = "Toggle Complete",
-                    tint     = if (todo.isCompleted) Primary else OutlineVariant,
-                    modifier = Modifier.size(26.dp)
-                )
-            }
-        }
 
-        // Overflow
-        Box {
-            IconButton(onClick = { expanded = true }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More", tint = OnSurfaceVariant)
+            // Event badge OR task actions
+            if (isEventSection) {
+                Box(
+                    modifier = Modifier
+                        .clip(RadiusMd)
+                        .background(PrimaryContainer)
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.CalendarMonth,
+                        contentDescription = "Event",
+                        tint     = Primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            } else {
+                if (todo.dueDate != null && !todo.isReminded && !todo.isCompleted) {
+                    IconButton(onClick = onSetReminder, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            Icons.Default.Alarm,
+                            contentDescription = "Set Reminder",
+                            tint     = Secondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                IconButton(onClick = onToggleComplete, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        imageVector        = if (todo.isCompleted) Icons.Default.CheckCircle
+                                            else Icons.Outlined.Circle,
+                        contentDescription = "Toggle Complete",
+                        tint               = if (todo.isCompleted) Primary else OutlineVariant,
+                        modifier           = Modifier.size(24.dp)
+                    )
+                }
             }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(text = { Text("Edit") },   onClick = { expanded = false; onEdit() })
-                DropdownMenuItem(text = { Text("Delete") }, onClick = { expanded = false; onDelete() })
+
+            // Overflow menu
+            Box {
+                IconButton(onClick = { expanded = true }, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = "More",
+                        tint     = OnSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenuItem(text = { Text("Edit") },   onClick = { expanded = false; onEdit() })
+                    DropdownMenuItem(text = { Text("Delete") }, onClick = { expanded = false; onDelete() })
+                }
             }
         }
     }
@@ -418,10 +427,10 @@ fun AddEditTodoDialog(
     var category by remember { mutableStateOf(todo?.category ?: "Anytime") }
 
     AlertDialog(
-        onDismissRequest  = onDismiss,
-        containerColor    = SurfaceContainerLowest,
-        shape             = RadiusCard,
-        title             = {
+        onDismissRequest = onDismiss,
+        containerColor   = SurfaceContainerLowest,
+        shape            = RadiusCard,
+        title = {
             Text(
                 if (todo == null) "New Task" else "Edit Task",
                 style = MaterialTheme.typography.titleLarge,
@@ -430,27 +439,35 @@ fun AddEditTodoDialog(
         },
         text = {
             Column {
-                OutlinedTextField(
+                TextField(
                     value         = title,
                     onValueChange = { title = it },
-                    label         = { Text("Task Title") },
+                    placeholder   = { Text("Task title") },
                     modifier      = Modifier.fillMaxWidth(),
                     shape         = RadiusLg,
-                    colors        = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor   = Primary,
-                        unfocusedBorderColor = OutlineVariant
+                    singleLine    = true,
+                    colors        = TextFieldDefaults.colors(
+                        focusedContainerColor   = SurfaceContainerLow,
+                        unfocusedContainerColor = SurfaceContainerLow,
+                        focusedIndicatorColor   = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor             = Primary
                     )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(
+                TextField(
                     value         = duration,
                     onValueChange = { duration = it },
-                    label         = { Text("Duration (e.g. 15m or 1h)") },
+                    placeholder   = { Text("Duration, e.g. 15m") },
                     modifier      = Modifier.fillMaxWidth(),
                     shape         = RadiusLg,
-                    colors        = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor   = Primary,
-                        unfocusedBorderColor = OutlineVariant
+                    singleLine    = true,
+                    colors        = TextFieldDefaults.colors(
+                        focusedContainerColor   = SurfaceContainerLow,
+                        unfocusedContainerColor = SurfaceContainerLow,
+                        focusedIndicatorColor   = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor             = Primary
                     )
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -464,8 +481,16 @@ fun AddEditTodoDialog(
                             onClick  = { category = cat },
                             label    = { Text(cat, style = MaterialTheme.typography.labelMedium) },
                             colors   = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = PrimaryContainer,
-                                selectedLabelColor     = OnPrimaryContainer
+                                selectedContainerColor = Primary,
+                                selectedLabelColor     = OnPrimary,
+                                containerColor         = SurfaceContainerLow,
+                                labelColor             = OnSurfaceVariant
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor         = Color.Transparent,
+                                selectedBorderColor = Color.Transparent,
+                                enabled             = true,
+                                selected            = category == cat
                             )
                         )
                     }
@@ -492,11 +517,9 @@ fun AddEditTodoDialog(
             ) { Text("Save") }
         },
         dismissButton = {
-            OutlinedButton(
-                onClick = onDismiss,
-                shape   = RadiusMd,
-                border  = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
-            ) { Text("Cancel", color = OnSurfaceVariant) }
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = OnSurfaceVariant)
+            }
         }
     )
 }
@@ -527,14 +550,14 @@ fun AddToTaskSheet(
     val dateLabel = SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(selectedCal.time)
     val timeLabel = SimpleDateFormat("h:mm a",      Locale.getDefault()).format(selectedCal.time)
 
-    val notifyOptions  = listOf("None", "On the day", "Night before", "1 hour before", "30 min before")
+    val notifyOptions   = listOf("None", "On the day", "Night before", "1 hour before", "30 min before")
     val durationOptions = listOf("5m", "15m", "30m", "1h", "2h")
 
     ModalBottomSheet(
-        onDismissRequest    = onDismiss,
-        containerColor      = MaterialTheme.colorScheme.background,
-        shape               = RadiusSheetTop,
-        dragHandle          = {
+        onDismissRequest = onDismiss,
+        containerColor   = MaterialTheme.colorScheme.background,
+        shape            = RadiusSheetTop,
+        dragHandle = {
             Box(
                 modifier = Modifier
                     .padding(top = 14.dp, bottom = 8.dp)
@@ -553,7 +576,7 @@ fun AddToTaskSheet(
             // Header
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 20.dp)
+                modifier          = Modifier.padding(bottom = 20.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -578,22 +601,25 @@ fun AddToTaskSheet(
             }
 
             // Title field
-            OutlinedTextField(
+            TextField(
                 value         = title,
                 onValueChange = { title = it },
-                label         = { Text(if (isEvent) "Event name" else "Task name") },
+                placeholder   = { Text(if (isEvent) "Event name" else "Task name") },
                 modifier      = Modifier.fillMaxWidth(),
                 singleLine    = true,
                 shape         = RadiusLg,
-                colors        = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor   = Primary,
-                    unfocusedBorderColor = OutlineVariant
+                colors        = TextFieldDefaults.colors(
+                    focusedContainerColor   = SurfaceContainerLow,
+                    unfocusedContainerColor = SurfaceContainerLow,
+                    focusedIndicatorColor   = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor             = Primary
                 )
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Date + Time
+            // Date + Time row
             Row(
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -622,7 +648,7 @@ fun AddToTaskSheet(
                     Icon(
                         Icons.Default.DateRange,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(15.dp),
                         tint     = Primary
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -657,12 +683,11 @@ fun AddToTaskSheet(
             if (!isEvent) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Category
                 Text(
                     "Category",
                     style    = MaterialTheme.typography.labelMedium,
                     color    = OnSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 6.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Morning", "Afternoon", "Anytime").forEach { cat ->
@@ -671,10 +696,16 @@ fun AddToTaskSheet(
                             onClick  = { category = cat },
                             label    = { Text(cat, style = MaterialTheme.typography.labelMedium) },
                             colors   = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = PrimaryContainer,
-                                selectedLabelColor     = OnPrimaryContainer,
+                                selectedContainerColor = Primary,
+                                selectedLabelColor     = OnPrimary,
                                 containerColor         = SurfaceContainerLow,
                                 labelColor             = OnSurfaceVariant
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                borderColor         = Color.Transparent,
+                                selectedBorderColor = Color.Transparent,
+                                enabled             = true,
+                                selected            = category == cat
                             )
                         )
                     }
@@ -682,12 +713,11 @@ fun AddToTaskSheet(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Duration
                 Text(
                     "Duration",
                     style    = MaterialTheme.typography.labelMedium,
                     color    = OnSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 6.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     durationOptions.forEach { d ->
@@ -707,12 +737,11 @@ fun AddToTaskSheet(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Notify later
                 Text(
                     "Notify me",
                     style    = MaterialTheme.typography.labelMedium,
                     color    = OnSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 6.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
                 var notifyExpanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
@@ -760,8 +789,7 @@ fun AddToTaskSheet(
                     modifier           = Modifier
                         .fillMaxWidth()
                         .height(110.dp)
-                        .clip(RadiusLg)
-                        .border(1.dp, OutlineVariant, RadiusLg),
+                        .clip(RadiusLg),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -773,11 +801,9 @@ fun AddToTaskSheet(
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                OutlinedButton(
+                TextButton(
                     onClick  = onDismiss,
-                    modifier = Modifier.weight(1f),
-                    shape    = RadiusMd,
-                    border   = androidx.compose.foundation.BorderStroke(1.dp, OutlineVariant)
+                    modifier = Modifier.weight(1f)
                 ) { Text("Cancel", color = OnSurfaceVariant) }
 
                 Button(
