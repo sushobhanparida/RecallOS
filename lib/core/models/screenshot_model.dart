@@ -1,18 +1,20 @@
-enum ScreenshotTag { shopping, link, event, read, general }
+import 'extracted_entity.dart';
+
+enum ScreenshotTag { note, link, qr, event, shopping }
 
 extension ScreenshotTagExt on ScreenshotTag {
   String get label {
     switch (this) {
+      case ScreenshotTag.note:
+        return 'Notes';
+      case ScreenshotTag.link:
+        return 'Links';
+      case ScreenshotTag.qr:
+        return 'QRs';
+      case ScreenshotTag.event:
+        return 'Events';
       case ScreenshotTag.shopping:
         return 'Shopping';
-      case ScreenshotTag.link:
-        return 'Link';
-      case ScreenshotTag.event:
-        return 'Event';
-      case ScreenshotTag.read:
-        return 'Read';
-      case ScreenshotTag.general:
-        return 'General';
     }
   }
 
@@ -21,13 +23,21 @@ extension ScreenshotTagExt on ScreenshotTag {
       case 'shopping':
         return ScreenshotTag.shopping;
       case 'link':
+      case 'links':
         return ScreenshotTag.link;
       case 'event':
+      case 'events':
         return ScreenshotTag.event;
+      case 'qr':
+      case 'qrs':
+        return ScreenshotTag.qr;
+      // Legacy tags fall back to Notes (the catch-all category).
+      case 'note':
+      case 'notes':
       case 'read':
-        return ScreenshotTag.read;
+      case 'general':
       default:
-        return ScreenshotTag.general;
+        return ScreenshotTag.note;
     }
   }
 }
@@ -38,14 +48,22 @@ class Screenshot {
   final String extractedText;
   final ScreenshotTag tag;
   final DateTime createdAt;
+  final List<ExtractedEntity> entities;
+  /// User-edited note text. When non-null, this screenshot has been "converted
+  /// to a note" — it appears in the Notes tab's saved-notes grid.
+  final String? noteText;
 
   const Screenshot({
     this.id,
     required this.uri,
     this.extractedText = '',
-    this.tag = ScreenshotTag.general,
+    this.tag = ScreenshotTag.note,
     required this.createdAt,
+    this.entities = const [],
+    this.noteText,
   });
+
+  bool get isNote => noteText != null;
 
   Screenshot copyWith({
     int? id,
@@ -53,6 +71,9 @@ class Screenshot {
     String? extractedText,
     ScreenshotTag? tag,
     DateTime? createdAt,
+    List<ExtractedEntity>? entities,
+    String? noteText,
+    bool clearNote = false,
   }) {
     return Screenshot(
       id: id ?? this.id,
@@ -60,6 +81,8 @@ class Screenshot {
       extractedText: extractedText ?? this.extractedText,
       tag: tag ?? this.tag,
       createdAt: createdAt ?? this.createdAt,
+      entities: entities ?? this.entities,
+      noteText: clearNote ? null : (noteText ?? this.noteText),
     );
   }
 
@@ -69,6 +92,8 @@ class Screenshot {
         'extractedText': extractedText,
         'tag': tag.label,
         'createdAt': createdAt.millisecondsSinceEpoch,
+        'entities': ExtractedEntity.encodeList(entities),
+        'noteText': noteText,
       };
 
   factory Screenshot.fromMap(Map<String, dynamic> map) => Screenshot(
@@ -77,5 +102,7 @@ class Screenshot {
         extractedText: (map['extractedText'] as String?) ?? '',
         tag: ScreenshotTagExt.fromString((map['tag'] as String?) ?? ''),
         createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
+        entities: ExtractedEntity.decodeList(map['entities'] as String?),
+        noteText: map['noteText'] as String?,
       );
 }

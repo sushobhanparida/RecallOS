@@ -44,10 +44,10 @@ class AppColors {
   static const Color tagLinkMuted = Color(0xFF1E2048);
   static const Color tagEvent = Color(0xFFF2AC57);         // amber
   static const Color tagEventMuted = Color(0xFF2D200A);
-  static const Color tagRead = Color(0xFFA0A0A0);          // grey
-  static const Color tagReadMuted = Color(0xFF222222);
-  static const Color tagGeneral = Color(0xFF6B6B6B);
-  static const Color tagGeneralMuted = Color(0xFF1A1A1A);
+  static const Color tagNote = Color(0xFFD9B86C);          // warm sand
+  static const Color tagNoteMuted = Color(0xFF2A2418);
+  static const Color tagQr = Color(0xFF38BDF8);            // sky cyan
+  static const Color tagQrMuted = Color(0xFF0B2436);
   static const Color tagTodo = Color(0xFFE5484D);          // red
   static const Color tagTodoMuted = Color(0xFF2D0E0F);
 

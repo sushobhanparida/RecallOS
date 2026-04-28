@@ -4,13 +4,19 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/colors.dart';
 import 'core/theme/typography.dart';
 import 'features/home/home_screen.dart';
-import 'features/todo/todo_screen.dart';
+import 'features/task/task_screen.dart';
 import 'features/stacks/stacks_screen.dart';
 import 'features/screenshot_detail/screenshot_detail_screen.dart';
 import 'features/stack_detail/stack_detail_screen.dart';
+import 'features/notes/note_picker_screen.dart';
+import 'features/notes/note_editor_screen.dart';
 
 final _router = GoRouter(
   initialLocation: '/home',
+  redirect: (context, state) {
+    if (state.uri.path == '/todo') return '/tasks';
+    return null;
+  },
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, shell) => _AppShell(shell: shell),
@@ -23,8 +29,8 @@ final _router = GoRouter(
         ]),
         StatefulShellBranch(routes: [
           GoRoute(
-            path: '/todo',
-            builder: (_, __) => const TodoScreen(),
+            path: '/tasks',
+            builder: (_, __) => const TaskScreen(),
           ),
         ]),
         StatefulShellBranch(routes: [
@@ -45,6 +51,16 @@ final _router = GoRouter(
       path: '/stack/:id',
       builder: (_, state) => StackDetailScreen(
         stackId: int.parse(state.pathParameters['id']!),
+      ),
+    ),
+    GoRoute(
+      path: '/notes/picker',
+      builder: (_, __) => const NotePickerScreen(),
+    ),
+    GoRoute(
+      path: '/notes/edit/:id',
+      builder: (_, state) => NoteEditorScreen(
+        screenshotId: int.parse(state.pathParameters['id']!),
       ),
     ),
   ],
@@ -90,7 +106,7 @@ class _LinearNavBar extends StatelessWidget {
 
   static const _items = [
     (Icons.grid_view_rounded, Icons.grid_view_rounded, 'Home'),
-    (Icons.check_circle_outline_rounded, Icons.check_circle_rounded, 'To-Do'),
+    (Icons.check_circle_outline_rounded, Icons.check_circle_rounded, 'Tasks'),
     (Icons.layers_outlined, Icons.layers_rounded, 'Stacks'),
   ];
 

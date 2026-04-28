@@ -9,11 +9,11 @@ class TagFilterBar extends StatelessWidget {
 
   static const _filters = [
     'All',
+    'Notes',
+    'Links',
+    'QRs',
+    'Events',
     'Shopping',
-    'Link',
-    'Event',
-    'Read',
-    'General',
   ];
 
   const TagFilterBar({
@@ -26,27 +26,34 @@ class TagFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 22),
       child: Row(
-        children: _filters.map((f) => _FilterChip(
-          label: f,
-          selected: f == selected,
-          onTap: () => onSelected(f),
-          tag: f == 'All' ? null : _tagFor(f),
-        )).toList(),
+        children: _filters
+            .map((f) => _FilterChip(
+                  label: f,
+                  selected: f == selected,
+                  onTap: () => onSelected(f),
+                  tag: f == 'All' ? null : _tagFor(f),
+                ))
+            .toList(),
       ),
     );
   }
 
   ScreenshotTag? _tagFor(String label) {
     switch (label) {
-      case 'Shopping': return ScreenshotTag.shopping;
-      case 'Link': return ScreenshotTag.link;
-      case 'Event': return ScreenshotTag.event;
-      case 'Read': return ScreenshotTag.read;
-      case 'General': return ScreenshotTag.general;
-      default: return null;
+      case 'Notes':
+        return ScreenshotTag.note;
+      case 'Links':
+        return ScreenshotTag.link;
+      case 'QRs':
+        return ScreenshotTag.qr;
+      case 'Events':
+        return ScreenshotTag.event;
+      case 'Shopping':
+        return ScreenshotTag.shopping;
     }
+    return null;
   }
 }
 
@@ -66,11 +73,16 @@ class _FilterChip extends StatelessWidget {
   static Color _dotColor(ScreenshotTag? t) {
     if (t == null) return AppColors.accent;
     switch (t) {
-      case ScreenshotTag.shopping: return AppColors.tagShopping;
-      case ScreenshotTag.link: return AppColors.tagLink;
-      case ScreenshotTag.event: return AppColors.tagEvent;
-      case ScreenshotTag.read: return AppColors.tagRead;
-      case ScreenshotTag.general: return AppColors.tagGeneral;
+      case ScreenshotTag.shopping:
+        return AppColors.tagShopping;
+      case ScreenshotTag.link:
+        return AppColors.tagLink;
+      case ScreenshotTag.event:
+        return AppColors.tagEvent;
+      case ScreenshotTag.note:
+        return AppColors.tagNote;
+      case ScreenshotTag.qr:
+        return AppColors.tagQr;
     }
   }
 
@@ -88,7 +100,9 @@ class _FilterChip extends StatelessWidget {
             color: selected ? AppColors.bgOverlay : AppColors.bgSurface,
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
-              color: selected ? AppColors.borderEmphasis : AppColors.borderDefault,
+              color: selected
+                  ? AppColors.borderEmphasis
+                  : AppColors.borderDefault,
               width: 1,
             ),
           ),
@@ -109,7 +123,8 @@ class _FilterChip extends StatelessWidget {
               Text(
                 label,
                 style: AppTypography.labelMd.copyWith(
-                  color: selected ? AppColors.textPrimary : AppColors.textSecondary,
+                  color:
+                      selected ? AppColors.textPrimary : AppColors.textSecondary,
                 ),
               ),
             ],

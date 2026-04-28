@@ -17,10 +17,10 @@ class TagBadge extends StatelessWidget {
         return AppColors.tagLinkMuted;
       case ScreenshotTag.event:
         return AppColors.tagEventMuted;
-      case ScreenshotTag.read:
-        return AppColors.tagReadMuted;
-      case ScreenshotTag.general:
-        return AppColors.tagGeneralMuted;
+      case ScreenshotTag.note:
+        return AppColors.tagNoteMuted;
+      case ScreenshotTag.qr:
+        return AppColors.tagQrMuted;
     }
   }
 
@@ -32,10 +32,10 @@ class TagBadge extends StatelessWidget {
         return AppColors.tagLink;
       case ScreenshotTag.event:
         return AppColors.tagEvent;
-      case ScreenshotTag.read:
-        return AppColors.tagRead;
-      case ScreenshotTag.general:
-        return AppColors.tagGeneral;
+      case ScreenshotTag.note:
+        return AppColors.tagNote;
+      case ScreenshotTag.qr:
+        return AppColors.tagQr;
     }
   }
 

@@ -39,14 +39,11 @@ class StackDetailScreen extends ConsumerWidget {
           return _StackDetailView(
             stack: stack,
             allScreenshots: allAsync.value ?? [],
+            onOpenPicker: () => ref.invalidate(allScreenshotsProvider),
             onAddScreenshot: (sId) =>
                 ref.read(stacksProvider.notifier).addScreenshot(stackId, sId),
-            onRemoveScreenshot: (sId) {
-              ref
-                  .read(stacksProvider.notifier)
-                  .removeScreenshot(stackId, sId);
-              ref.invalidate(stackDetailProvider(stackId));
-            },
+            onRemoveScreenshot: (sId) =>
+                ref.read(stacksProvider.notifier).removeScreenshot(stackId, sId),
           );
         },
       ),
@@ -57,12 +54,14 @@ class StackDetailScreen extends ConsumerWidget {
 class _StackDetailView extends StatelessWidget {
   final stack_model.Stack stack;
   final List<Screenshot> allScreenshots;
+  final VoidCallback onOpenPicker;
   final void Function(int) onAddScreenshot;
   final void Function(int) onRemoveScreenshot;
 
   const _StackDetailView({
     required this.stack,
     required this.allScreenshots,
+    required this.onOpenPicker,
     required this.onAddScreenshot,
     required this.onRemoveScreenshot,
   });
@@ -74,7 +73,7 @@ class _StackDetailView extends StatelessWidget {
         children: [
           // Top bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+            padding: const EdgeInsets.fromLTRB(14, 8, 22, 0),
             child: Row(
               children: [
                 IconButton(
@@ -118,7 +117,7 @@ class _StackDetailView extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 22),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -139,7 +138,7 @@ class _StackDetailView extends StatelessWidget {
                   )
                 : GridView.builder(
                     padding:
-                        const EdgeInsets.fromLTRB(16, 0, 16, 80),
+                        const EdgeInsets.fromLTRB(22, 0, 22, 80),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
@@ -164,10 +163,12 @@ class _StackDetailView extends StatelessWidget {
   }
 
   void _showAddPicker(BuildContext context) {
+    onOpenPicker();
     final existing =
         stack.screenshots.map((s) => s.id!).toSet();
     final available =
         allScreenshots.where((s) => !existing.contains(s.id)).toList();
+    final hasAnyScreenshots = allScreenshots.isNotEmpty;
 
     showModalBottomSheet(
       context: context,
@@ -184,6 +185,7 @@ class _StackDetailView extends StatelessWidget {
         minChildSize: 0.4,
         builder: (ctx, scrollCtrl) => _ScreenshotPicker(
           screenshots: available,
+          hasAnyScreenshots: hasAnyScreenshots,
           scrollController: scrollCtrl,
           onSelect: (id) {
             onAddScreenshot(id);
@@ -269,11 +271,13 @@ class _Img extends StatelessWidget {
 
 class _ScreenshotPicker extends StatefulWidget {
   final List<Screenshot> screenshots;
+  final bool hasAnyScreenshots;
   final ScrollController scrollController;
   final void Function(int) onSelect;
 
   const _ScreenshotPicker({
     required this.screenshots,
+    required this.hasAnyScreenshots,
     required this.scrollController,
     required this.onSelect,
   });
@@ -325,9 +329,15 @@ class _ScreenshotPickerState extends State<_ScreenshotPicker> {
         const SizedBox(height: 12),
         Expanded(
           child: widget.screenshots.isEmpty
-              ? const Center(
-                  child: Text('All screenshots are already in this stack',
-                      style: TextStyle(color: AppColors.textMuted)))
+              ? Center(
+                  child: Text(
+                    widget.hasAnyScreenshots
+                        ? 'All screenshots are already in this stack'
+                        : 'No screenshots yet — import some on the Home tab',
+                    style: const TextStyle(color: AppColors.textMuted),
+                    textAlign: TextAlign.center,
+                  ),
+                )
               : GridView.builder(
                   controller: widget.scrollController,
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),

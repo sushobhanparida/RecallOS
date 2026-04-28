@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
-import '../../../core/models/todo_model.dart';
-import 'todo_item_tile.dart';
+import '../../../core/models/task_model.dart';
+import 'task_item_tile.dart';
 
-class TodoSection extends StatefulWidget {
+class TaskSection extends StatefulWidget {
   final String title;
   final Color color;
   final IconData icon;
-  final List<Todo> todos;
-  final void Function(Todo) onToggle;
+  final List<Task> tasks;
+  final void Function(Task) onToggle;
   final void Function(int) onDelete;
 
-  const TodoSection({
+  const TaskSection({
     super.key,
     required this.title,
     required this.color,
     required this.icon,
-    required this.todos,
+    required this.tasks,
     required this.onToggle,
     required this.onDelete,
   });
 
   @override
-  State<TodoSection> createState() => _TodoSectionState();
+  State<TaskSection> createState() => _TaskSectionState();
 }
 
-class _TodoSectionState extends State<TodoSection>
+class _TaskSectionState extends State<TaskSection>
     with SingleTickerProviderStateMixin {
   bool _expanded = true;
 
@@ -35,11 +35,10 @@ class _TodoSectionState extends State<TodoSection>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section header
         GestureDetector(
           onTap: () => setState(() => _expanded = !_expanded),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(22, 16, 22, 8),
             child: Row(
               children: [
                 Container(
@@ -68,7 +67,7 @@ class _TodoSectionState extends State<TodoSection>
                         Border.all(color: AppColors.borderDefault, width: 1),
                   ),
                   child: Text(
-                    '${widget.todos.length}',
+                    '${widget.tasks.length}',
                     style: AppTypography.monoSm
                         .copyWith(color: AppColors.textMuted),
                   ),
@@ -85,14 +84,13 @@ class _TodoSectionState extends State<TodoSection>
             ),
           ),
         ),
-        // Items
         AnimatedCrossFade(
           firstChild: Column(
-            children: widget.todos
+            children: widget.tasks
                 .map((t) => Padding(
                       padding: const EdgeInsets.only(bottom: 4),
-                      child: TodoItemTile(
-                        todo: t,
+                      child: TaskItemTile(
+                        task: t,
                         onToggle: () => widget.onToggle(t),
                         onDelete: () => widget.onDelete(t.id!),
                       ),

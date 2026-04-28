@@ -21,14 +21,39 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin flutter_plugin_android_lifecycle, io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.google_mlkit_barcode_scanning.GoogleMlKitBarcodeScanningPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin google_mlkit_barcode_scanning, com.google_mlkit_barcode_scanning.GoogleMlKitBarcodeScanningPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.google_mlkit_commons.GoogleMlKitCommonsPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin google_mlkit_commons, com.google_mlkit_commons.GoogleMlKitCommonsPlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.google_mlkit_entity_extraction.GoogleMlKitEntityExtractionPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin google_mlkit_entity_extraction, com.google_mlkit_entity_extraction.GoogleMlKitEntityExtractionPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.google_mlkit_face_detection.GoogleMlKitFaceDetectionPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin google_mlkit_face_detection, com.google_mlkit_face_detection.GoogleMlKitFaceDetectionPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new com.google_mlkit_object_detection.GoogleMlKitObjectDetectionPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin google_mlkit_object_detection, com.google_mlkit_object_detection.GoogleMlKitObjectDetectionPlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new com.google_mlkit_text_recognition.GoogleMlKitTextRecognitionPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin google_mlkit_text_recognition, com.google_mlkit_text_recognition.GoogleMlKitTextRecognitionPlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new vn.hunghd.flutter.plugins.imagecropper.ImageCropperPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin image_cropper, vn.hunghd.flutter.plugins.imagecropper.ImageCropperPlugin", e);
     }
     try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.imagepicker.ImagePickerPlugin());
@@ -49,6 +74,11 @@ public final class GeneratedPluginRegistrant {
       flutterEngine.getPlugins().add(new com.tekartik.sqflite.SqflitePlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin sqflite_android, com.tekartik.sqflite.SqflitePlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new io.flutter.plugins.urllauncher.UrlLauncherPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin url_launcher_android, io.flutter.plugins.urllauncher.UrlLauncherPlugin", e);
     }
   }
 }

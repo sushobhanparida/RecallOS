@@ -25,7 +25,26 @@ dependencies:
   cached_network_image: ^3.3.1
 
   # OCR
-  google_mlkit_text_recognition: ^0.13.1
+  google_mlkit_text_recognition: ^0.15.1
+
+  # Object detection (smart crop)
+  google_mlkit_object_detection: ^0.15.1
+
+  # Entity extraction (URLs, money, dates, phones, flight, etc.)
+  google_mlkit_entity_extraction: ^0.15.3
+
+  # Barcode + QR scanning (UPI, WiFi, URLs, contacts)
+  google_mlkit_barcode_scanning: ^0.14.2
+
+  # Face detection (portraits)
+  google_mlkit_face_detection: ^0.13.2
+
+  # Launching UPI / URL / vcard intents
+  url_launcher: ^6.3.0
+
+  # Image cropping
+  image_cropper: ^8.0.2
+  image: ^4.5.4
 
   # Fonts
   google_fonts: ^6.2.1

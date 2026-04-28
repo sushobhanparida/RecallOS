@@ -1,17 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
-import '../../../core/models/todo_model.dart';
+import '../../../core/models/task_model.dart';
 
-class TodoItemTile extends StatelessWidget {
-  final Todo todo;
+class TaskItemTile extends StatelessWidget {
+  final Task task;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
 
-  const TodoItemTile({
+  const TaskItemTile({
     super.key,
-    required this.todo,
+    required this.task,
     required this.onToggle,
     required this.onDelete,
   });
@@ -19,7 +20,7 @@ class TodoItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 1),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.bgSurface,
@@ -44,7 +45,7 @@ class TodoItemTile extends StatelessWidget {
                         color: AppColors.borderSubtle, width: 1),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: _Thumb(uri: todo.screenshotUri),
+                  child: _Thumb(uri: task.screenshotUri),
                 ),
                 const SizedBox(width: 12),
                 // Title + meta
@@ -53,12 +54,12 @@ class TodoItemTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        todo.title,
+                        task.title,
                         style: AppTypography.labelLg.copyWith(
-                          color: todo.isCompleted
+                          color: task.isCompleted
                               ? AppColors.textMuted
                               : AppColors.textPrimary,
-                          decoration: todo.isCompleted
+                          decoration: task.isCompleted
                               ? TextDecoration.lineThrough
                               : null,
                           decorationColor: AppColors.textMuted,
@@ -69,18 +70,35 @@ class TodoItemTile extends StatelessWidget {
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          if (todo.isEvent)
-                            const Icon(Icons.calendar_today_outlined,
-                                size: 11, color: AppColors.sectionEvent)
-                          else
-                            Icon(Icons.access_time_rounded,
-                                size: 11,
-                                color: _categoryColor(todo.category)),
-                          const SizedBox(width: 4),
-                          Text(
-                            _meta(),
-                            style: AppTypography.monoSm,
+                          Icon(
+                            _intentIcon(task.intent),
+                            size: 11,
+                            color: _intentColor(task.intent),
                           ),
+                          const SizedBox(width: 4),
+                          if (task.dueDate != null)
+                            Text(
+                              DateFormat('MMM d · HH:mm').format(task.dueDate!),
+                              style: AppTypography.monoSm,
+                            ),
+                          if (task.dueDate != null &&
+                              task.intent.label.isNotEmpty)
+                            Text(' · ',
+                                style: AppTypography.monoSm
+                                    .copyWith(color: AppColors.textMuted)),
+                          if (task.intent.label.isNotEmpty)
+                            Text(
+                              task.intent.label,
+                              style: AppTypography.monoSm.copyWith(
+                                  color: _intentColor(task.intent)),
+                            ),
+                          if (task.dueDate == null &&
+                              task.intent.label.isEmpty)
+                            Text(
+                              'Task',
+                              style: AppTypography.monoSm
+                                  .copyWith(color: AppColors.textMuted),
+                            ),
                         ],
                       ),
                     ],
@@ -88,7 +106,8 @@ class TodoItemTile extends StatelessWidget {
                 ),
                 // Right actions
                 const SizedBox(width: 8),
-                _CompletionIcon(isCompleted: todo.isCompleted, onTap: onToggle),
+                _CompletionIcon(
+                    isCompleted: task.isCompleted, onTap: onToggle),
                 const SizedBox(width: 4),
                 GestureDetector(
                   onTap: () => _showMenu(context),
@@ -106,27 +125,37 @@ class TodoItemTile extends StatelessWidget {
     );
   }
 
-  String _meta() {
-    final parts = <String>[];
-    if (todo.dueDate != null) {
-      final dt = todo.dueDate!;
-      parts.add(
-          '${dt.month}/${dt.day} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}');
+  IconData _intentIcon(TaskIntent intent) {
+    switch (intent) {
+      case TaskIntent.event:
+        return Icons.calendar_today_outlined;
+      case TaskIntent.visitLater:
+        return Icons.link_rounded;
+      case TaskIntent.payLater:
+        return Icons.payments_outlined;
+      case TaskIntent.readLater:
+        return Icons.menu_book_outlined;
+      case TaskIntent.buyLater:
+        return Icons.shopping_bag_outlined;
+      case TaskIntent.task:
+        return Icons.task_alt_rounded;
     }
-    parts.add(todo.duration.label);
-    return parts.join(' · ');
   }
 
-  Color _categoryColor(TodoCategory cat) {
-    switch (cat) {
-      case TodoCategory.morning:
-        return AppColors.sectionMorning;
-      case TodoCategory.afternoon:
-        return AppColors.sectionAfternoon;
-      case TodoCategory.anytime:
-        return AppColors.sectionAnytime;
-      case TodoCategory.event:
-        return AppColors.sectionEvent;
+  Color _intentColor(TaskIntent intent) {
+    switch (intent) {
+      case TaskIntent.event:
+        return AppColors.tagEvent;
+      case TaskIntent.visitLater:
+        return AppColors.tagLink;
+      case TaskIntent.payLater:
+        return AppColors.tagShopping;
+      case TaskIntent.readLater:
+        return AppColors.tagNote;
+      case TaskIntent.buyLater:
+        return AppColors.tagShopping;
+      case TaskIntent.task:
+        return AppColors.textMuted;
     }
   }
 
