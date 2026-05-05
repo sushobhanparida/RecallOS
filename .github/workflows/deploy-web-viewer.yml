@@ -1,0 +1,30 @@
+name: Deploy Web Viewer
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'recallos_web_viewer/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        working-directory: recallos_web_viewer
+        run: flutter pub get
+
+      - name: Build Flutter Web
+        working-directory: recallos_web_viewer
+        run: flutter build web --release --base-href /
+
+      - name: Deploy to Vercel
+        working-directory: recallos_web_viewer
+        run: npx vercel deploy --prebuilt build/web --token ${{ secrets.VERCEL_TOKEN }} --prod

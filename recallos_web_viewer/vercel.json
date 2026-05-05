@@ -1,0 +1,8 @@
+{
+  "buildCommand": "flutter build web --release --base-href /",
+  "outputDirectory": "build/web",
+  "rewrites": [
+    { "source": "/stack/:uuid", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

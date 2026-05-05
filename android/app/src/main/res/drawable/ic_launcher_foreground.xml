@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="461"
+    android:viewportHeight="420">
+    <!-- Scale 0.65× around viewport center so the logo sits inside the
+         adaptive-icon safe zone (66dp of 108dp), leaving the accent
+         background visible as a border. strokeWidth is bumped to 17 so
+         effective stroke ≈ 17×0.65 = 11, matching the splash icon weight. -->
+    <group
+        android:pivotX="230.5"
+        android:pivotY="210"
+        android:scaleX="0.65"
+        android:scaleY="0.65">
+        <path
+            android:pathData="M161.652 270.772L128.944 289.648C113.517 298.558 101.037 292.491 101.037 274.629V137.826C101.037 111.566 105.18 105.386 117.573 98.2362L194.706 53.7242C210.133 44.8235 222.604 50.8902 222.604 68.7435V109.356"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="17"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M226.54 305.055L189.56 326.393C174.133 335.302 161.653 329.235 161.653 311.373V174.57C161.653 148.31 165.796 142.131 178.18 134.981L255.314 90.4687C270.74 81.568 283.22 87.6347 283.22 105.488V146.083"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="17"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <path
+            android:pathData="M369.342 318.159L287.823 365.193C279.962 369.726 270.342 374.527 257.221 364.066C233.769 345.381 222.294 301.441 222.294 267.086V211.316C222.294 185.056 226.428 178.877 238.813 171.727L315.946 127.215C331.373 118.314 343.853 124.372 343.853 142.234V190.932C343.853 221.664 352.901 260.24 371.838 281.204C382.099 292.566 381.258 311.278 369.342 318.159Z"
+            android:fillColor="@android:color/transparent"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="17"
+            android:strokeLineJoin="round"
+            android:strokeLineCap="round" />
+    </group>
+</vector>
